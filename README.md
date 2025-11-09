@@ -37,7 +37,7 @@ Mendaftarkan pengguna baru ke dalam sistem.
       "nama": "Nama Lengkap",
       "email": "user@example.com",
       "password": "password123",
-      "role": "user" 
+      "role": "admin" 
     }
     ```
 * **Success Response (201)**:
@@ -75,7 +75,7 @@ Melakukan login untuk mendapatkan token autentikasi.
       "message": "Login berhasil",
       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
       "id": 1,
-      "role": "user",
+      "role": "admin",
       "nama": "Nama Lengkap"
     }
     ```
@@ -130,7 +130,7 @@ Mengambil detail informasi seorang pengguna.
       "id": 1,
       "nama": "Nama Lengkap",
       "email": "user@example.com",
-      "role": "user"
+      "role": "admin"
     }
     ```
 * **Error Responses**:
