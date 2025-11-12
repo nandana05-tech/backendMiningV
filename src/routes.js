@@ -29,23 +29,23 @@ const {
   getShippingScheduleById,
   createShippingSchedule,
   updateShippingSchedule,
-} = require("./handler");
+} = require('./handler');
 
 const routes = [
   // User Management
-  { method: "POST", path: "/register", handler: registerUser },
-  { method: "POST", path: "/login", handler: loginUser },
-  { method: "DELETE", path: "/logout/{id}", handler: logoutUser },
+  { method: 'POST', path: '/register', handler: registerUser },
+  { method: 'POST', path: '/login', handler: loginUser },
+  { method: 'DELETE', path: '/logout/{id}', handler: logoutUser },
 
   // Profil Pengguna
-  { method: "GET", path: "/users/{id}", handler: getUserById },
-  { method: "PUT", path: "/users/{id}", handler: updateUser },
-  { method: "PUT", path: "/users/{id}/role", handler: updateRoleUser },
-  { method: "DELETE", path: "/users/{id}", handler: deleteUser },
+  { method: 'GET', path: '/users/{id}', handler: getUserById },
+  { method: 'PUT', path: '/users/{id}', handler: updateUser },
+  { method: 'PUT', path: '/users/{id}/role', handler: updateRoleUser },
+  { method: 'DELETE', path: '/users/{id}', handler: deleteUser },
 
   // Password Reset
-  { method: "POST", path: "/forgot-password", handler: forgotPassword },
-  { method: "POST", path: "/reset-password", handler: resetPassword },
+  { method: 'POST', path: '/forgot-password', handler: forgotPassword },
+  { method: 'POST', path: '/reset-password', handler: resetPassword },
 
   // === MINES ===
   { method: 'GET', path: '/mines', handler: getAllMines },

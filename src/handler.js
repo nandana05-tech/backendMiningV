@@ -7,9 +7,13 @@ const nodemailer = require('nodemailer');
 const fs = require('fs').promises;
 const path = require('path');
 const { request } = require('http');
+const { error } = require('console');
 
 const ALGORITHM = 'aes-256-cbc';
-const SECRET_KEY = crypto.createHash('sha256').update(String('kuncirahasia')).digest();
+const SECRET_KEY = crypto
+  .createHash('sha256')
+  .update(String('kuncirahasia'))
+  .digest();
 const IV = Buffer.from('1234567890123456');
 
 function encrypt(text) {
@@ -17,7 +21,7 @@ function encrypt(text) {
   const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY, iv);
   let encrypted = cipher.update(text, 'utf8', 'base64');
   encrypted += cipher.final('base64');
-  return iv.toString('hex') + ':' + encrypted;
+  return `${iv.toString('hex')  }:${  encrypted}`;
 }
 
 function decrypt(encryptedText) {
@@ -40,7 +44,12 @@ async function verifyToken(req, h) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return h.response({ message: 'Token tidak ditemukan' }).code(401).takeover();
+    return h
+      .response({
+        message: 'Token tidak ditemukan'
+      })
+      .code(401)
+      .takeover();
   }
 
   const token = authHeader.split(' ')[1];
@@ -48,19 +57,26 @@ async function verifyToken(req, h) {
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
 
-    const [rows] = await pool.query('SELECT * FROM users WHERE id = ? AND token = ?', [
-      decoded.id,
-      token,
-    ]);
+    const [rows] = await pool.query(
+      'SELECT * FROM users WHERE id = ? AND token = ?',
+      [decoded.id, token]
+    );
 
     if (rows.length === 0) {
-      return h.response({ message: 'Token tidak valid' }).code(403).takeover();
+      return h.response({
+        message: 'Token tidak valid'
+      }).code(403).takeover();
     }
 
     req.user = decoded;
     return req;
   } catch (err) {
-    return h.response({ message: 'Token tidak valid atau sudah kedaluwarsa' }).code(403).takeover();
+    return h
+      .response({
+        message: 'Token tidak valid atau sudah kedaluwarsa'
+      })
+      .code(403)
+      .takeover();
   }
 }
 
@@ -72,21 +88,36 @@ async function verifyAdmin(req, h) {
 
     const user = req.user;
 
-    const [rows] = await pool.query('SELECT role FROM users WHERE id = ?', [user.id]);
+    const [rows] = await pool.query('SELECT role FROM users WHERE id = ?', [
+      user.id,
+    ]);
     if (rows.length === 0) {
-      return h.response({ message: 'User tidak ditemukan di database' }).code(404).takeover();
+      return h
+        .response({ message: 'User tidak ditemukan di database' })
+        .code(404)
+        .takeover();
     }
 
     const currentRole = rows[0].role;
 
     if (currentRole !== 'admin') {
-      return h.response({ message: 'Akses ditolak: hanya admin yang dapat mengakses ini' }).code(403).takeover();
+      return h
+        .response({
+          message: 'Akses ditolak: hanya admin yang dapat mengakses ini',
+        })
+        .code(403)
+        .takeover();
     }
 
     return req;
   } catch (err) {
     console.error('Terjadi kesalahan di verifyAdmin:', err);
-    return h.response({ message: 'Terjadi kesalahan verifikasi admin' }).code(500).takeover();
+    return h
+      .response({
+        message: 'Terjadi kesalahan verifikasi admin'
+      })
+      .code(500)
+      .takeover();
   }
 }
 
@@ -98,21 +129,38 @@ async function verifyMinePlanner(req, h) {
 
     const user = req.user;
 
-    const [rows] = await pool.query('SELECT role FROM users WHERE id = ?', [user.id]);
+    const [rows] = await pool.query('SELECT role FROM users WHERE id = ?', [
+      user.id,
+    ]);
     if (rows.length === 0) {
-      return h.response({ message: 'User tidak ditemukan di database' }).code(404).takeover();
+      return h
+        .response({
+          message: 'User tidak ditemukan di database'
+        })
+        .code(404)
+        .takeover();
     }
 
     const currentRole = rows[0].role;
 
     if (currentRole !== 'mine_planner') {
-      return h.response({ message: 'Akses ditolak: hanya mine planner yang dapat mengakses ini' }).code(403).takeover();
+      return h
+        .response({
+          message: 'Akses ditolak: hanya mine planner yang dapat mengakses ini',
+        })
+        .code(403)
+        .takeover();
     }
 
     return req;
   } catch (err) {
     console.error('Terjadi kesalahan di verifyMinePlanner:', err);
-    return h.response({ message: 'Terjadi kesalahan verifikasi mine planner' }).code(500).takeover();
+    return h
+      .response({
+        message: 'Terjadi kesalahan verifikasi mine planner'
+      })
+      .code(500)
+      .takeover();
   }
 }
 
@@ -124,21 +172,39 @@ async function verifyShippingPlanner(req, h) {
 
     const user = req.user;
 
-    const [rows] = await pool.query('SELECT role FROM users WHERE id = ?', [user.id]);
+    const [rows] = await pool.query('SELECT role FROM users WHERE id = ?', [
+      user.id,
+    ]);
     if (rows.length === 0) {
-      return h.response({ message: 'User tidak ditemukan di database' }).code(404).takeover();
+      return h
+        .response({
+          message: 'User tidak ditemukan di database'
+        })
+        .code(404)
+        .takeover();
     }
 
     const currentRole = rows[0].role;
 
     if (currentRole !== 'shipping_planner') {
-      return h.response({ message: 'Akses ditolak: hanya shipping planner yang dapat mengakses ini' }).code(403).takeover();
+      return h
+        .response({
+          message:
+            'Akses ditolak: hanya shipping planner yang dapat mengakses ini',
+        })
+        .code(403)
+        .takeover();
     }
 
     return req;
   } catch (err) {
     console.error('Terjadi kesalahan di verifyShippingPlanner:', err);
-    return h.response({ message: 'Terjadi kesalahan verifikasi shipping planner' }).code(500).takeover();
+    return h
+      .response({
+        message: 'Terjadi kesalahan verifikasi shipping planner'
+      })
+      .code(500)
+      .takeover();
   }
 }
 
@@ -154,7 +220,9 @@ async function verifyIsUser(req, h) {
     if (!req.user || !req.user.id) {
       console.error('req.user tidak ditemukan setelah verifyToken');
       return h
-        .response({ message: 'Token tidak valid atau user tidak ditemukan' })
+        .response({
+          message: 'Token tidak valid atau user tidak ditemukan'
+        })
         .code(403)
         .takeover();
     }
@@ -166,7 +234,10 @@ async function verifyIsUser(req, h) {
 
     if (userId !== paramId) {
       return h
-        .response({ message: 'Akses ditolak: anda tidak memiliki izin untuk mengakses ini' })
+        .response({
+          message:
+            'Akses ditolak: anda tidak memiliki izin untuk mengakses ini',
+        })
         .code(403)
         .takeover();
     }
@@ -175,7 +246,9 @@ async function verifyIsUser(req, h) {
   } catch (err) {
     console.error('Terjadi kesalahan di verifyIsUser:', err);
     return h
-      .response({ message: 'Terjadi kesalahan saat memverifikasi user' })
+      .response({
+        message: 'Terjadi kesalahan saat memverifikasi user'
+      })
       .code(500)
       .takeover();
   }
@@ -191,10 +264,18 @@ exports.registerUser = async (req, h) => {
       [nama, email, hashedPassword, role]
     );
 
-    return h.response({ message: 'Registrasi berhasil' }).code(201);
+    return h
+      .response({
+        message: 'Registrasi berhasil',
+        error: false
+      })
+      .code(201);
   } catch (err) {
     console.error('Error saat registrasi:', err);
-    return h.response({ message: 'Gagal registrasi' }).code(500);
+    return h.response({
+      message: 'Gagal registrasi',
+      error: true
+    }).code(500);
   }
 };
 
@@ -203,10 +284,14 @@ exports.loginUser = async (req, h) => {
   const { email, password } = req.payload;
 
   try {
-    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [
+      email,
+    ]);
 
     if (rows.length === 0) {
-      return h.response({ message: 'Email tidak ditemukan' }).code(404);
+      return h.response({
+        message: 'Email tidak ditemukan'
+      }).code(404);
     }
 
     const user = rows[0];
@@ -216,22 +301,35 @@ exports.loginUser = async (req, h) => {
       return h.response({ message: 'Password salah' }).code(401);
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, role: user.role }, SECRET_KEY, {
+      expiresIn: '1h',
+    });
 
-    await pool.query('UPDATE users SET token = ? WHERE id = ?', [token, user.id]);
+    await pool.query('UPDATE users SET token = ? WHERE id = ?', [
+      token,
+      user.id,
+    ]);
 
     return h
       .response({
         message: 'Login berhasil',
-        token: token,
-        id: user.id,
-        role: user.role,
-        nama: user.nama,
+        error: false,
+        data: {
+          token: token,
+          id: user.id,
+          role: user.role,
+          nama: user.nama,
+        },
       })
       .code(200);
   } catch (err) {
     console.error('Error saat login:', err);
-    return h.response({ message: 'Terjadi kesalahan server' }).code(500);
+    return h
+      .response({
+        message: 'Terjadi kesalahan server',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -241,13 +339,18 @@ exports.logoutUser = async (req, h) => {
 
   try {
     await pool.query('UPDATE users SET token = NULL WHERE id = ?', [id]);
-    return h.response({ message: 'Logout berhasil' }).code(200);
+    return h.response({
+      message: 'Logout berhasil',
+      error: false
+    }).code(200);
   } catch (err) {
     console.error('Error saat logout:', err);
-    return h.response({ message: 'Gagal logout' }).code(500);
+    return h.response({
+      message: 'Gagal logout',
+      error: true
+    }).code(500);
   }
 };
-
 
 // Handlers untuk mengambil profil pengguna berdasarkan ID
 exports.getUserById = async (req, h) => {
@@ -257,16 +360,35 @@ exports.getUserById = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [rows] = await pool.query('SELECT id, nama, email, role FROM users WHERE id = ?', [id]);
+    const [rows] = await pool.query(
+      'SELECT id, nama, email, role FROM users WHERE id = ?',
+      [id]
+    );
 
     if (rows.length === 0) {
-      return h.response({ message: 'Pengguna tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Pengguna tidak ditemukan',
+          error: true
+        })
+        .code(404);
     }
 
-    return h.response(rows[0]).code(200);
+    return h
+      .response({
+        message: 'Profil berhasil diambil',
+        error: false,
+        data: rows[0]
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat mengambil profil:', err);
-    return h.response({ message: 'Gagal mengambil profil pengguna' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengambil profil pengguna',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -284,23 +406,40 @@ exports.updateUser = async (req, h) => {
 
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      query = 'UPDATE users SET nama = ?, email = ?, password = ?, updated_at = NOW() WHERE id = ?';
+      query =
+        'UPDATE users SET nama = ?, email = ?, password = ?, updated_at = NOW() WHERE id = ?';
       params = [nama, email, hashedPassword, id];
     } else {
-      query = 'UPDATE users SET nama = ?, email = ?, updated_at = NOW() WHERE id = ?';
+      query =
+        'UPDATE users SET nama = ?, email = ?, updated_at = NOW() WHERE id = ?';
       params = [nama, email, id];
     }
 
     const [result] = await pool.query(query, params);
 
     if (result.affectedRows === 0) {
-      return h.response({ message: 'Pengguna tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Pengguna tidak ditemukan',
+          error: true
+        })
+        .code(404);
     }
 
-    return h.response({ message: 'Profil berhasil diperbarui' }).code(200);
+    return h
+      .response({
+        message: 'Profil berhasil diperbarui',
+        error: false
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat update profil:', err);
-    return h.response({ message: 'Gagal memperbarui profil pengguna' }).code(500);
+    return h
+      .response({
+        message: 'Gagal memperbarui profil pengguna',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -313,21 +452,42 @@ exports.updateRoleUser = async (req, h) => {
   const { role } = req.payload;
 
   if (!role || role.trim() === '') {
-    return h.response({ message: 'Field role tidak boleh kosong' }).code(400);
+    return h
+      .response({
+        message: 'Field role tidak boleh kosong'
+      })
+      .code(400);
   }
 
   try {
-
-    const [result] = await pool.query('UPDATE users SET role = ? WHERE id = ?', [role, id]);
+    const [result] = await pool.query(
+      'UPDATE users SET role = ? WHERE id = ?',
+      [role, id]
+    );
 
     if (result.affectedRows === 0) {
-      return h.response({ message: 'Pengguna tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Pengguna tidak ditemukan',
+          error: true
+        })
+        .code(404);
     }
 
-    return h.response({ message: 'Role pengguna berhasil diperbarui' }).code(200);
+    return h
+      .response({
+        message: 'Role pengguna berhasil diperbarui',
+        error: false
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat update role pengguna:', err);
-    return h.response({ message: 'Gagal memperbarui role pengguna' }).code(500);
+    return h
+      .response({
+        message: 'Gagal memperbarui role pengguna',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -342,13 +502,25 @@ exports.deleteUser = async (req, h) => {
     const [result] = await pool.query('DELETE FROM users WHERE id = ?', [id]);
 
     if (result.affectedRows === 0) {
-      return h.response({ message: 'Pengguna tidak ditemukan' }).code(404);
+      return h
+        .response({ message: 'Pengguna tidak ditemukan', error: true })
+        .code(404);
     }
 
-    return h.response({ message: 'Profil berhasil dihapus' }).code(200);
+    return h
+      .response({
+        message: 'Profil berhasil dihapus',
+        error: false
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat hapus profil:', err);
-    return h.response({ message: 'Gagal menghapus profil pengguna' }).code(500);
+    return h
+      .response({
+        message: 'Gagal menghapus profil pengguna',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -357,9 +529,16 @@ exports.forgotPassword = async (req, h) => {
   const { email } = req.payload;
 
   try {
-    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [
+      email,
+    ]);
     if (rows.length === 0) {
-      return h.response({ message: 'Email tidak terdaftar' }).code(404);
+      return h
+        .response({
+          message: 'Email tidak terdaftar',
+          error: true
+        })
+        .code(404);
     }
 
     const user = rows[0];
@@ -392,10 +571,20 @@ exports.forgotPassword = async (req, h) => {
       html: `<p>Klik link berikut untuk reset password (berlaku 1 jam):</p><a href="${resetLink}">${resetLink}</a>`,
     });
 
-    return h.response({ message: 'Email reset password telah dikirim' }).code(200);
+    return h
+      .response({
+        message: 'Email reset password telah dikirim',
+        error: false
+      })
+      .code(200);
   } catch (err) {
     console.error('Error forgot password:', err);
-    return h.response({ message: 'Gagal mengirim email reset password' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengirim email reset password',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -410,7 +599,12 @@ exports.resetPassword = async (req, h) => {
     );
 
     if (rows.length === 0) {
-      return h.response({ message: 'Token tidak valid atau telah kadaluarsa' }).code(400);
+      return h
+        .response({
+          message: 'Token tidak valid atau telah kadaluarsa',
+          error: true,
+        })
+        .code(400);
     }
 
     const resetData = rows[0];
@@ -421,12 +615,24 @@ exports.resetPassword = async (req, h) => {
       resetData.user_id,
     ]);
 
-    await pool.query('DELETE FROM password_resets WHERE id = ?', [resetData.id]);
+    await pool.query('DELETE FROM password_resets WHERE id = ?', [
+      resetData.id,
+    ]);
 
-    return h.response({ message: 'Password berhasil direset' }).code(200);
+    return h
+      .response({
+        message: 'Password berhasil direset',
+        error: false
+      })
+      .code(200);
   } catch (err) {
     console.error('Error reset password:', err);
-    return h.response({ message: 'Gagal mereset password' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mereset password',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -435,16 +641,27 @@ exports.resetPassword = async (req, h) => {
 exports.getAllMines = async (req, h) => {
   const verified = await verifyToken(req, h);
   if (verified !== req) return verified;
-  
+
   try {
     const [result] = await pool.query(`
       SELECT mine_id, mine_name, location, region, start_date, status, remarks 
       FROM mine_master
     `);
-    return h.response(result).code(200);
+    return h
+      .response({
+        message: 'Data tambang berhasil diambil',
+        error: false,
+        data: result,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat mengambil semua data tambang:', err);
-    return h.response({ message: 'Gagal mengambil data tambang' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengambil data tambang',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -456,20 +673,39 @@ exports.getMineById = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query(`
+    const [result] = await pool.query(
+      `
       SELECT mine_id, mine_name, location, region, start_date, status, remarks 
       FROM mine_master
       WHERE mine_id = ?
-    `, [id]);
+    `,
+      [id]
+    );
 
     if (result.length === 0) {
-      return h.response({ message: 'Data tambang tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Data tambang tidak ditemukan',
+          error: true
+        })
+        .code(404);
     }
 
-    return h.response(result[0]).code(200);
+    return h
+      .response({
+        message: 'Data tambang berhasil diambil',
+        error: false,
+        data: result[0],
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat mengambil data tambang:', err);
-    return h.response({ message: 'Gagal mengambil data tambang' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengambil data tambang',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -484,10 +720,21 @@ exports.getAllEquipments = async (req, h) => {
       SELECT equipment_id, mine_id, equipment_type, brand, model, base_capacity_ton, last_maintenance, operator_id
       FROM equipment_inventory
     `);
-    return h.response(result).code(200);
+    return h
+      .response({
+        message: 'Data equipment berhasil diambil',
+        error: false,
+        data: result,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat mengambil data equipment:', err);
-    return h.response({ message: 'Gagal mengambil data equipment' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengambil data equipment',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -499,20 +746,39 @@ exports.getEquipmentById = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query(`
+    const [result] = await pool.query(
+      `
       SELECT equipment_id, mine_id, equipment_type, brand, model, base_capacity_ton, last_maintenance, operator_id
       FROM equipment_inventory
       WHERE equipment_id = ?
-    `, [id]);
+    `,
+      [id]
+    );
 
     if (result.length === 0) {
-      return h.response({ message: 'Equipment tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Equipment tidak ditemukan',
+          error: true
+        })
+        .code(404);
     }
 
-    return h.response(result[0]).code(200);
+    return h
+      .response({
+        message: 'Equipment berhasil diambil',
+        error: false,
+        data: result[0],
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat mengambil data equipment:', err);
-    return h.response({ message: 'Gagal mengambil data equipment' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengambil data equipment',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -528,7 +794,7 @@ exports.createEquipment = async (req, h) => {
     model,
     base_capacity_ton,
     last_maintenance,
-    operator_id
+    operator_id,
   } = req.payload;
 
   try {
@@ -541,39 +807,51 @@ exports.createEquipment = async (req, h) => {
     let newId;
 
     if (result.length === 0) {
-      newId = "EQ000";
+      newId = 'EQ000';
     } else {
       const lastId = result[0].equipment_id;
       const number = parseInt(lastId.slice(2));
 
-      const next = (number + 1).toString().padStart(3, "0");
+      const next = (number + 1).toString().padStart(3, '0');
 
       newId = `EQ${next}`;
     }
 
-    await pool.query(`
+    await pool.query(
+      `
       INSERT INTO equipment_inventory 
       (equipment_id, mine_id, equipment_type, brand, model, base_capacity_ton, last_maintenance, operator_id)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      newId,
-      mine_id,
-      equipment_type,
-      brand,
-      model,
-      base_capacity_ton,
-      last_maintenance,
-      operator_id
-    ]);
+    `,
+      [
+        newId,
+        mine_id,
+        equipment_type,
+        brand,
+        model,
+        base_capacity_ton,
+        last_maintenance,
+        operator_id,
+      ]
+    );
 
-    return h.response({
-      message: "Equipment berhasil ditambahkan",
-      equipment_id: newId
-    }).code(201);
-
+    return h
+      .response({
+        message: 'Equipment berhasil ditambahkan',
+        error: false,
+        data: {
+          equipment_id: newId,
+        },
+      })
+      .code(201);
   } catch (err) {
-    console.error("Error saat menambahkan equipment:", err);
-    return h.response({ message: "Gagal menambahkan equipment" }).code(500);
+    console.error('Error saat menambahkan equipment:', err);
+    return h
+      .response({
+        message: 'Gagal menambahkan equipment',
+        error: true
+      })
+      .code(500);
   }
 };
 
@@ -590,7 +868,7 @@ exports.updateEquipment = async (req, h) => {
     model,
     base_capacity_ton,
     last_maintenance,
-    operator_id
+    operator_id,
   } = req.payload;
 
   try {
@@ -608,17 +886,32 @@ exports.updateEquipment = async (req, h) => {
       base_capacity_ton,
       last_maintenance,
       operator_id,
-      id
+      id,
     ]);
 
     if (result.affectedRows === 0) {
-      return h.response({ message: 'Equipment tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Equipment tidak ditemukan',
+          error: true
+        })
+        .code(404);
     }
 
-    return h.response({ message: 'Equipment berhasil diperbarui' }).code(200);
+    return h
+      .response({
+        message: 'Equipment berhasil diperbarui',
+        error: false,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat memperbarui equipment:', err);
-    return h.response({ message: 'Gagal memperbarui equipment' }).code(500);
+    return h
+      .response({
+        message: 'Gagal memperbarui equipment',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -630,10 +923,21 @@ exports.getEffectiveCapacity = async (req, h) => {
 
   try {
     const [result] = await pool.query('SELECT * FROM effective_capacity');
-    return h.response(result).code(200);
+    return h
+      .response({
+        message: 'Data effective capacity berhasil diambil',
+        error: false,
+        data: result,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat mengambil data:', err);
-    return h.response({ message: 'Gagal mengambil data effective capacity' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengambil data effective capacity',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -651,7 +955,7 @@ exports.createEffectiveCapacity = async (req, h) => {
     weather_condition,
     availability_pct,
     effective_capacity_ton_day,
-    remark
+    remark,
   } = req.payload;
 
   try {
@@ -665,12 +969,12 @@ exports.createEffectiveCapacity = async (req, h) => {
     let newId;
 
     if (result.length === 0) {
-      newId = "EFC0000";
+      newId = 'EFC0000';
     } else {
       const lastId = result[0].effcap_id;
       const number = parseInt(lastId.slice(3));
 
-      const next = (number + 1).toString().padStart(4, "0");
+      const next = (number + 1).toString().padStart(4, '0');
       newId = `EFC${next}`;
     }
 
@@ -690,19 +994,27 @@ exports.createEffectiveCapacity = async (req, h) => {
         weather_condition,
         availability_pct,
         effective_capacity_ton_day,
-        remark
+        remark,
       ]
     );
 
     return h
       .response({
-        message: "Data effective capacity berhasil ditambahkan",
-        effcap_id: newId
+        message: 'Data effective capacity berhasil ditambahkan',
+        error: false,
+        data: {
+          effcap_id: newId,
+        },
       })
       .code(201);
   } catch (err) {
-    console.error("Error saat menambahkan data:", err);
-    return h.response({ message: "Gagal menambahkan data" }).code(500);
+    console.error('Error saat menambahkan data:', err);
+    return h
+      .response({
+        message: 'Gagal menambahkan data',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -721,7 +1033,7 @@ exports.updateEffectiveCapacity = async (req, h) => {
     weather_condition,
     availability_pct,
     effective_capacity_ton_day,
-    remark
+    remark,
   } = req.payload;
 
   try {
@@ -740,17 +1052,32 @@ exports.updateEffectiveCapacity = async (req, h) => {
       availability_pct,
       effective_capacity_ton_day,
       remark,
-      id
+      id,
     ]);
 
     if (result.affectedRows === 0) {
-      return h.response({ message: 'Data tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Data tidak ditemukan',
+          error: true,
+        })
+        .code(404);
     }
 
-    return h.response({ message: 'Data berhasil diperbarui' }).code(200);
+    return h
+      .response({
+        message: 'Data berhasil diperbarui',
+        error: false,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat update data:', err);
-    return h.response({ message: 'Gagal memperbarui data' }).code(500);
+    return h
+      .response({
+        message: 'Gagal memperbarui data',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -776,10 +1103,21 @@ exports.getProductionConstraints = async (req, h) => {
       ORDER BY constraint_id ASC
     `);
 
-    return h.response(result).code(200);
+    return h
+      .response({
+        message: 'Data production constraints berhasil diambil',
+        error: false,
+        data: result,
+      })
+      .code(200);
   } catch (err) {
-    console.error("Error getProductionConstraints:", err);
-    return h.response({ message: "Gagal mengambil data production constraints" }).code(500);
+    console.error('Error getProductionConstraints:', err);
+    return h
+      .response({
+        message: 'Gagal mengambil data production constraints',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -795,7 +1133,7 @@ exports.createProductionConstraint = async (req, h) => {
     constraint_type,
     capacity_value,
     unit,
-    remarks
+    remarks,
   } = req.payload;
 
   try {
@@ -809,12 +1147,12 @@ exports.createProductionConstraint = async (req, h) => {
     let newId;
 
     if (result.length === 0) {
-      newId = "C0001";
+      newId = 'C0001';
     } else {
       const lastId = result[0].constraint_id;
       const number = parseInt(lastId.slice(1));
 
-      const next = (number + 1).toString().padStart(4, "0");
+      const next = (number + 1).toString().padStart(4, '0');
       newId = `C${next}`;
     }
 
@@ -838,20 +1176,27 @@ exports.createProductionConstraint = async (req, h) => {
         capacity_value,
         unit,
         update_date,
-        remarks
+        remarks,
       ]
     );
 
     return h
       .response({
-        message: "Data production constraint berhasil ditambahkan",
-        constraint_id: newId
+        message: 'Data production constraint berhasil ditambahkan',
+        error: false,
+        data: {
+          constraint_id: newId,
+        },
       })
       .code(201);
-
   } catch (err) {
-    console.error("Error createProductionConstraint:", err);
-    return h.response({ message: "Gagal menambahkan data production constraint" }).code(500);
+    console.error('Error createProductionConstraint:', err);
+    return h
+      .response({
+        message: 'Gagal menambahkan data production constraint',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -876,10 +1221,21 @@ exports.getProductionPlans = async (req, h) => {
       ORDER BY plan_id ASC
     `);
 
-    return h.response(result).code(200);
+    return h
+      .response({
+        message: 'Data production plans berhasil diambil',
+        error: false,
+        data: result,
+      })
+      .code(200);
   } catch (err) {
-    console.error("Error getProductionPlans:", err);
-    return h.response({ message: "Gagal mengambil data production plans" }).code(500);
+    console.error('Error getProductionPlans:', err);
+    return h
+      .response({
+        message: 'Gagal mengambil data production plans',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -895,7 +1251,7 @@ exports.createProductionPlan = async (req, h) => {
     actual_output_ton,
     target_variance_pct,
     status,
-    updated_by
+    updated_by,
   } = req.payload;
 
   try {
@@ -909,12 +1265,12 @@ exports.createProductionPlan = async (req, h) => {
     let newId;
 
     if (result.length === 0) {
-      newId = "PLAN0000";
+      newId = 'PLAN0000';
     } else {
       const lastId = result[0].plan_id;
       const number = parseInt(lastId.slice(5));
 
-      const next = (number + 1).toString().padStart(4, "0");
+      const next = (number + 1).toString().padStart(4, '0');
       newId = `PLAN${next}`;
     }
 
@@ -932,19 +1288,24 @@ exports.createProductionPlan = async (req, h) => {
         actual_output_ton,
         target_variance_pct,
         status,
-        updated_by
+        updated_by,
       ]
     );
     return h
       .response({
-        message: "Data production plan berhasil ditambahkan",
-        plan_id: newId
+        message: 'Data production plan berhasil ditambahkan',
+        error: false,
+        plan_id: newId,
       })
       .code(201);
-
   } catch (err) {
-    console.error("Error createProductionPlan:", err);
-    return h.response({ message: "Gagal menambahkan data production plan" }).code(500);
+    console.error('Error createProductionPlan:', err);
+    return h
+      .response({
+        message: 'Gagal menambahkan data production plan',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -961,7 +1322,7 @@ exports.updateProductionPlan = async (req, h) => {
     actual_output_ton,
     target_variance_pct,
     status,
-    updated_by
+    updated_by,
   } = req.payload;
 
   try {
@@ -978,17 +1339,32 @@ exports.updateProductionPlan = async (req, h) => {
       target_variance_pct,
       status,
       updated_by,
-      id
+      id,
     ]);
 
     if (result.affectedRows === 0) {
-      return h.response({ message: 'Data tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Data tidak ditemukan',
+          error: true,
+        })
+        .code(404);
     }
 
-    return h.response({ message: 'Data berhasil diperbarui' }).code(200);
+    return h
+      .response({
+        message: 'Data berhasil diperbarui',
+        error: false,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat update data:', err);
-    return h.response({ message: 'Gagal memperbarui data' }).code(500);
+    return h
+      .response({
+        message: 'Gagal memperbarui data',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -1000,10 +1376,21 @@ exports.getWeatherData = async (req, h) => {
 
   try {
     const [result] = await pool.query('SELECT * FROM weather_data');
-    return h.response(result).code(200);
+    return h
+      .response({
+        message: 'Data cuaca berhasil diambil',
+        error: false,
+        data: result,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat mengambil data cuaca:', err);
-    return h.response({ message: 'Gagal mengambil data cuaca' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengambil data cuaca',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -1015,10 +1402,21 @@ exports.getRoadConditions = async (req, h) => {
 
   try {
     const [result] = await pool.query('SELECT * FROM road_condition');
-    return h.response(result).code(200);
+    return h
+      .response({
+        message: 'Data kondisi jalan berhasil diambil',
+        error: false,
+        data: result,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat mengambil data kondisi jalan:', err);
-    return h.response({ message: 'Gagal mengambil data kondisi jalan' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengambil data kondisi jalan',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -1034,7 +1432,7 @@ exports.updateRoadCondition = async (req, h) => {
     condition_level,
     accessibility_pct,
     last_inspection,
-    remark
+    remark,
   } = req.payload;
   try {
     const query = `
@@ -1049,17 +1447,32 @@ exports.updateRoadCondition = async (req, h) => {
       accessibility_pct,
       last_inspection,
       remark,
-      id
+      id,
     ]);
 
     if (result.affectedRows === 0) {
-      return h.response({ message: 'Data tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Data tidak ditemukan',
+          error: true,
+        })
+        .code(404);
     }
 
-    return h.response({ message: 'Data berhasil diperbarui' }).code(200);
+    return h
+      .response({
+        message: 'Data berhasil diperbarui',
+        error: false,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat update data:', err);
-    return h.response({ message: 'Gagal memperbarui data' }).code(500);
+    return h
+      .response({
+        message: 'Gagal memperbarui data',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -1071,10 +1484,21 @@ exports.getAllShippingSchedules = async (req, h) => {
 
   try {
     const [result] = await pool.query('SELECT * FROM shipping_schedule');
-    return h.response(result).code(200);
+    return h
+      .response({
+        message: 'Data jadwal pengiriman berhasil diambil',
+        error: false,
+        data: result,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat mengambil data jadwal pengiriman:', err);
-    return h.response({ message: 'Gagal mengambil data jadwal pengiriman' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengambil data jadwal pengiriman',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -1086,16 +1510,35 @@ exports.getShippingScheduleById = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query('SELECT * FROM shipping_schedule WHERE shipment_id = ?', [id]);
+    const [result] = await pool.query(
+      'SELECT * FROM shipping_schedule WHERE shipment_id = ?',
+      [id]
+    );
 
     if (result.length === 0) {
-      return h.response({ message: 'Data tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Data tidak ditemukan',
+          error: true,
+        })
+        .code(404);
     }
 
-    return h.response(result[0]).code(200);
+    return h
+      .response({
+        message: 'Data berhasil diambil',
+        error: false,
+        data: result[0],
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat mengambil data jadwal pengiriman:', err);
-    return h.response({ message: 'Gagal mengambil data jadwal pengiriman' }).code(500);
+    return h
+      .response({
+        message: 'Gagal mengambil data jadwal pengiriman',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -1126,12 +1569,12 @@ exports.createShippingSchedule = async (req, h) => {
     let newId;
 
     if (result.length === 0) {
-      newId = "SHP0000";
+      newId = 'SHP0000';
     } else {
       const lastId = result[0].shipment_id;
       const number = parseInt(lastId.slice(4));
 
-      const next = (number + 1).toString().padStart(4, "0");
+      const next = (number + 1).toString().padStart(4, '0');
       newId = `SHP${next}`;
     }
 
@@ -1151,10 +1594,23 @@ exports.createShippingSchedule = async (req, h) => {
       ]
     );
 
-    return h.response({ message: 'Jadwal pengiriman berhasil dibuat', shipment_id: newId }).code(201);
+    return h
+      .response({
+        message: 'Jadwal pengiriman berhasil dibuat',
+        error: false,
+        data: {
+          shipment_id: newId,
+        },
+      })
+      .code(201);
   } catch (err) {
     console.error('Error saat membuat jadwal pengiriman:', err);
-    return h.response({ message: 'Gagal membuat jadwal pengiriman' }).code(500);
+    return h
+      .response({
+        message: 'Gagal membuat jadwal pengiriman',
+        error: true,
+      })
+      .code(500);
   }
 };
 
@@ -1191,16 +1647,31 @@ exports.updateShippingSchedule = async (req, h) => {
       etd,
       eta,
       status,
-      id
+      id,
     ]);
 
     if (result.affectedRows === 0) {
-      return h.response({ message: 'Data tidak ditemukan' }).code(404);
+      return h
+        .response({
+          message: 'Data tidak ditemukan',
+          error: true,
+        })
+        .code(404);
     }
 
-    return h.response({ message: 'Data berhasil diperbarui' }).code(200);
+    return h
+      .response({
+        message: 'Data berhasil diperbarui',
+        error: false,
+      })
+      .code(200);
   } catch (err) {
     console.error('Error saat update data:', err);
-    return h.response({ message: 'Gagal memperbarui data' }).code(500);
+    return h
+      .response({
+        message: 'Gagal memperbarui data',
+        error: true,
+      })
+      .code(500);
   }
 };
