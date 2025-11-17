@@ -43,13 +43,15 @@ Mendaftarkan pengguna baru ke dalam sistem.
 * **Success Response (201)**:
     ```json
     {
-      "message": "Registrasi berhasil"
+      "message": "Registrasi berhasil",
+      "error": false,
     }
     ```
 * **Error Response (500)**:
     ```json
     {
-      "message": "Gagal registrasi"
+      "message": "Gagal registrasi",
+      "error": true
     }
     ```
 
@@ -73,16 +75,19 @@ Melakukan login untuk mendapatkan token autentikasi.
     ```json
     {
       "message": "Login berhasil",
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-      "id": 1,
-      "role": "admin",
-      "nama": "Nama Lengkap"
+      "error": false,
+      "data": {    
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "id": 1,
+        "role": "admin",
+        "nama": "Nama Lengkap"
+      }
     }
     ```
 * **Error Responses**:
-    * **404**: `{ "message": "Email tidak ditemukan" }`
-    * **401**: `{ "message": "Password salah" }`
-    * **500**: `{ "message": "Terjadi kesalahan server" }`
+    * **404**: `{ "message": "Email tidak ditemukan", "error": true}`
+    * **401**: `{ "message": "Password salah", "error": true }`
+    * **500**: `{ "message": "Terjadi kesalahan server", "error": true}`
 
 ---
 
@@ -99,13 +104,15 @@ Menghapus token pengguna dari database.
 * **Success Response (200)**:
     ```json
     {
-      "message": "Logout berhasil"
+      "message": "Logout berhasil",
+      "error": false
     }
     ```
 * **Error Response (500)**:
     ```json
     {
-      "message": "Gagal logout"
+      "message": "Gagal logout",
+      "error": true
     }
     ```
 
@@ -127,17 +134,21 @@ Mengambil detail informasi seorang pengguna.
 * **Success Response (200)**:
     ```json
     {
-      "id": 1,
-      "nama": "Nama Lengkap",
-      "email": "user@example.com",
-      "role": "admin"
+      "message": "Profil berhasil diambil",
+      "error": false,
+      "data": {
+        "id": 1,
+        "nama": "Nama Lengkap",
+        "email": "user@example.com",
+        "role": "admin"
+      }
     }
     ```
 * **Error Responses**:
-    * **401**: `{ "message": "Token tidak ditemukan" }`
-    * **403**: `{ "message": "Token tidak valid atau sudah kedaluwarsa" }`
-    * **404**: `{ "message": "Pengguna tidak ditemukan" }`
-    * **500**: `{ "message": "Gagal mengambil profil pengguna" }`
+    * **401**: `{ "message": "Token tidak ditemukan", "error": true}`
+    * **403**: `{ "message": "Token tidak valid atau sudah kedaluwarsa", "error": true}`
+    * **404**: `{ "message": "Pengguna tidak ditemukan", "error": true}`
+    * **500**: `{ "message": "Gagal mengambil profil pengguna", "error": true}`
 
 ---
 
@@ -162,13 +173,14 @@ Memperbarui nama, email, atau password pengguna.
 * **Success Response (200)**:
     ```json
     {
-      "message": "Profil berhasil diperbarui"
+      "message": "Profil berhasil diperbarui",
+      "error": false
     }
     ```
 * **Error Responses**:
     * **401/403**: (Error terkait token)
-    * **404**: `{ "message": "Pengguna tidak ditemukan" }`
-    * **500**: `{ "message": "Gagal memperbarui profil pengguna" }`
+    * **404**: `{ "message": "Pengguna tidak ditemukan", "error": true}`
+    * **500**: `{ "message": "Gagal memperbarui profil pengguna", "error": true}`
 
 ---
 
@@ -190,15 +202,16 @@ Mengubah role seorang pengguna (misal: dari "user" menjadi "admin").
 * **Success Response (200)**:
     ```json
     {
-      "message": "Role pengguna berhasil diperbarui"
+      "message": "Role pengguna berhasil diperbarui",
+      "error": false
     }
     ```
 * **Error Responses**:
     * **401/403**: (Error terkait token)
     * **403**: `{ "message": "Akses ditolak: hanya admin yang dapat mengakses ini" }`
-    * **400**: `{ "message": "Field role tidak boleh kosong" }`
-    * **404**: `{ "message": "Pengguna tidak ditemukan" }`
-    * **500**: `{ "message": "Gagal memperbarui role pengguna" }`
+    * **400**: `{ "message": "Field role tidak boleh kosong", "error": true}`
+    * **404**: `{ "message": "Pengguna tidak ditemukan", "error": true}`
+    * **500**: `{ "message": "Gagal memperbarui role pengguna", "error": true}`
 
 ---
 
@@ -215,19 +228,18 @@ Menghapus akun pengguna dari database.
 * **Success Response (200)**:
     ```json
     {
-      "message": "Profil berhasil dihapus"
+      "message": "Profil berhasil dihapus",
+      "error": false
     }
     ```
 * **Error Responses**:
     * **401/403**: (Error terkait token/otorisasi dari `verifyIsUser`)
-    * **404**: `{ "message": "Pengguna tidak ditemukan" }`
-    * **500**: `{ "message": "Gagal menghapus profil pengguna" }`
+    * **404**: `{ "message": "Pengguna tidak ditemukan", "error": true}`
+    * **500**: `{ "message": "Gagal menghapus profil pengguna", "error": true}`
+
+---
 
 # Dokumentasi API: Password Reset
-
-Dokumentasi ini merinci endpoint dan alur yang diperlukan oleh frontend untuk mengimplementasikan fitur lupa/reset password.
-
-> **Base URL**: Seluruh endpoint menggunakan URL dasar: `http://localhost:5000`
 
 ---
 
@@ -276,12 +288,13 @@ Memulai proses reset password dengan mengirimkan email yang berisi token ke peng
 * **Success Response (200)**:
     ```json
     {
-      "message": "Email reset password telah dikirim"
+      "message": "Email reset password telah dikirim",
+      "error": false
     }
     ```
 * **Error Responses**:
-    * **404**: `{ "message": "Email tidak terdaftar" }`
-    * **500**: `{ "message": "Gagal mengirim email reset password" }`
+    * **404**: `{ "message": "Email tidak terdaftar", "error": true}`
+    * **500**: `{ "message": "Gagal mengirim email reset password", "error": true}`
 
 ---
 
@@ -303,12 +316,14 @@ Mengatur password baru menggunakan token yang valid.
 * **Success Response (200)**:
     ```json
     {
-      "message": "Password berhasil direset"
+      "message": "Password berhasil direset",
+      "error": false
     }
     ```
 * **Error Responses**:
-    * **400**: `{ "message": "Token tidak valid atau telah kadaluarsa" }`
-    * **500**: `{ "message": "Gagal mereset password" }`
+    * **400**: `{ "message": "Token tidak valid atau telah kadaluarsa", "error": true }`
+    * **404**: `{ "message": "Token tidak ditemukan", "error": true }`
+    * **500**: `{ "message": "Gagal mereset password", "error": true}`
 
 ---
 
@@ -324,31 +339,37 @@ Mengambil **seluruh** daftar data tambang yang ada di database.
 * **Success Response (200)**:
     * Mengembalikan sebuah **array** dari objek data tambang.
     ```json
-    [
-      {
-        "mine_id": "MINE_1",
-        "mine_name": "Tambang Adaro",
-        "location": "Kalimantan Selatan",
-        "region": "Kalsel",
-        "start_date": "2005-10-10T00:00:00.000Z",
-        "status": "Active",
-        "remarks": "Pemasok utama"
-      },
-      {
-        "mine_id": "MINE_2",
-        "mine_name": "Tambang Kaltim Prima",
-        "location": "Kalimantan Timur",
-        "region": "Kaltim",
-        "start_date": "1998-05-20T00:00:00.000Z",
-        "status": "Active",
-        "remarks": null
-      }
-    ]
+    {
+      "message": "Data tambang berhasil diambil",
+      "error": false,
+      "data": 
+          [
+            {
+              "mine_id": "MINE_1",
+              "mine_name": "Tambang Adaro",
+              "location": "Kalimantan Selatan",
+              "region": "Kalsel",
+              "start_date": "2005-10-10T00:00:00.000Z",
+              "status": "Active",
+              "remarks": "Pemasok utama"
+            },
+            {
+              "mine_id": "MINE_2",
+              "mine_name": "Tambang Kaltim Prima",
+              "location": "Kalimantan Timur",
+              "region": "Kaltim",
+              "start_date": "1998-05-20T00:00:00.000Z",
+              "status": "Active",
+              "remarks": null
+            }
+          ]
+  }
     ```
 * **Error Response (500)**:
     ```json
     {
-      "message": "Gagal mengambil data tambang"
+      "message": "Gagal mengambil data tambang",
+      "error": true
     }
     ```
 
@@ -367,26 +388,35 @@ Mengambil data tambang **spesifik** berdasarkan `mine_id`.
     * Mengembalikan sebuah **objek** tunggal dari data tambang.
     ```json
     {
-      "mine_id": "MINE_1",
-      "mine_name": "Tambang Adaro",
-      "location": "Kalimantan Selatan",
-      "region": "Kalsel",
-      "start_date": "2005-10-10T00:00:00.000Z",
-      "status": "Active",
-      "remarks": "Pemasok utama"
+      "message": "Data tambang berhasil diambil",
+      "error": false,
+      "data": 
+          [
+            {
+              "mine_id": "MINE_1",
+              "mine_name": "Tambang Adaro",
+              "location": "Kalimantan Selatan",
+              "region": "Kalsel",
+              "start_date": "2005-10-10T00:00:00.000Z",
+              "status": "Active",
+              "remarks": "Pemasok utama"
+            }
+          ]
     }
     ```
 * **Error Responses**:
     * **404 (Not Found)**:
         ```json
         {
-          "message": "Data tambang tidak ditemukan"
+          "message": "Data tambang tidak ditemukan",
+          "error": true
         }
         ```
     * **500 (Server Error)**:
         ```json
         {
-          "message": "Gagal mengambil data tambang"
+          "message": "Gagal mengambil data tambang",
+          "error": true
         }
         ```
 ---
@@ -422,33 +452,38 @@ Mengambil **seluruh** daftar peralatan dari inventaris.
 * **Success Response (200)**:
     * Mengembalikan sebuah **array** dari objek peralatan.
     ```json
-    [
-      {
-        "equipment_id": "EQ001",
-        "mine_id": "MINE_1",
-        "equipment_type": "Dump Truck",
-        "brand": "Caterpillar",
-        "model": "797F",
-        "base_capacity_ton": 400,
-        "last_maintenance": "2025-10-20T00:00:00.000Z",
-        "operator_id": "OP005"
-      },
-      {
-        "equipment_id": "EQ002",
-        "mine_id": "MINE_2",
-        "equipment_type": "Excavator",
-        "brand": "Komatsu",
-        "model": "PC2000-8",
-        "base_capacity_ton": 120,
-        "last_maintenance": "2025-11-01T00:00:00.000Z",
-        "operator_id": "OP007"
-      }
-    ]
+    {
+      "message": "Data equipment berhasil diambil",
+      "error": false,
+      "data": [
+        {
+          "equipment_id": "EQ001",
+          "mine_id": "MINE_1",
+          "equipment_type": "Dump Truck",
+          "brand": "Caterpillar",
+          "model": "797F",
+          "base_capacity_ton": 400,
+          "last_maintenance": "2025-10-20T00:00:00.000Z",
+          "operator_id": "OP005"
+        },
+        {
+          "equipment_id": "EQ002",
+          "mine_id": "MINE_2",
+          "equipment_type": "Excavator",
+          "brand": "Komatsu",
+          "model": "PC2000-8",
+          "base_capacity_ton": 120,
+          "last_maintenance": "2025-11-01T00:00:00.000Z",
+          "operator_id": "OP007"
+        }
+      ]
+    }
     ```
 * **Error Response (500)**:
     ```json
     {
-      "message": "Gagal mengambil data equipment"
+      "message": "Gagal mengambil data equipment",
+      "error": true
     }
     ```
 
@@ -467,27 +502,35 @@ Mengambil data peralatan **spesifik** berdasarkan `equipment_id`.
     * Mengembalikan sebuah **objek** tunggal dari data peralatan.
     ```json
     {
-      "equipment_id": "EQ001",
-      "mine_id": "MINE_1",
-      "equipment_type": "Dump Truck",
-      "brand": "Caterpillar",
-      "model": "797F",
-      "base_capacity_ton": 400,
-      "last_maintenance": "2025-10-20T00:00:00.000Z",
-      "operator_id": "OP005"
+      "message": "Data equipment berhasil diambil",
+      "error": false,
+      "data": [
+        {
+          "equipment_id": "EQ001",
+          "mine_id": "MINE_1",
+          "equipment_type": "Dump Truck",
+          "brand": "Caterpillar",
+          "model": "797F",
+          "base_capacity_ton": 400,
+          "last_maintenance": "2025-10-20T00:00:00.000Z",
+          "operator_id": "OP005"
+        }
+      ]
     }
     ```
 * **Error Responses**:
     * **404 (Not Found)**:
         ```json
         {
-          "message": "Equipment tidak ditemukan"
+          "message": "Equipment tidak ditemukan",
+          "error": true
         }
         ```
     * **500 (Server Error)**:
         ```json
         {
-          "message": "Gagal mengambil data equipment"
+          "message": "Gagal mengambil data equipment",
+          "error": true
         }
         ```
 
@@ -516,13 +559,19 @@ Membuat entri peralatan baru di inventaris. ID Peralatan (`equipment_id`) akan d
     ```json
     {
       "message": "Equipment berhasil ditambahkan",
-      "equipment_id": "EQ003"
+      "error": false,
+      "data": [
+        {
+          "equipment_id": "EQ003"
+        }
+      ]
     }
     ```
 * **Error Response (500)**:
     ```json
     {
-      "message": "Gagal menambahkan equipment"
+      "message": "Gagal menambahkan equipment",
+      "error": true
     }
     ```
 
@@ -553,20 +602,23 @@ Memperbarui data peralatan yang sudah ada berdasarkan `equipment_id`.
 * **Success Response (200)**:
     ```json
     {
-      "message": "Equipment berhasil diperbarui"
+      "message": "Equipment berhasil diperbarui",
+      "error": false
     }
     ```
 * **Error Responses**:
     * **404 (Not Found)**:
         ```json
         {
-          "message": "Equipment tidak ditemukan"
+          "message": "Equipment tidak ditemukan",
+          "error": true
         }
         ```
     * **500 (Server Error)**:
         ```json
         {
-          "message": "Gagal memperbarui equipment"
+          "message": "Gagal memperbarui equipment",
+          "error": true
         }
         ```
 
@@ -584,24 +636,28 @@ Endpoint untuk mengelola data kapasitas efektif peralatan.
 * **Success Response (200)**:
     * Mengembalikan sebuah **array** dari objek kapasitas efektif.
     ```json
-    [
-      {
-        "effcap_id": "EFC0001",
-        "mine_id": "MINE_1",
-        "equipment_id": "EQ001",
-        "week_start": "2025-11-10T00:00:00.000Z",
-        "distance_km": 5.5,
-        "road_condition": "Good",
-        "weather_condition": "Clear",
-        "availability_pct": 95.0,
-        "effective_capacity_ton_day": 1500,
-        "remark": "Operasi normal"
-      }
-    ]
+    {
+      "message": "Data effective capacity berhasil diambil",
+      "error": false,
+      "data": [
+        {
+          "effcap_id": "EFC0001",
+          "mine_id": "MINE_1",
+          "equipment_id": "EQ001",
+          "week_start": "2025-11-10T00:00:00.000Z",
+          "distance_km": 5.5,
+          "road_condition": "Good",
+          "weather_condition": "Clear",
+          "availability_pct": 95.0,
+          "effective_capacity_ton_day": 1500,
+          "remark": "Operasi normal"
+        }
+      ]
+    }
     ```
 * **Error Response (500)**:
     ```json
-    { "message": "Gagal mengambil data effective capacity" }
+    { "message": "Gagal mengambil data effective capacity", "error": true}
     ```
 
 ### Menambahkan Data Kapasitas Efektif
@@ -627,12 +683,17 @@ Endpoint untuk mengelola data kapasitas efektif peralatan.
     ```json
     {
       "message": "Data effective capacity berhasil ditambahkan",
-      "effcap_id": "EFC0002"
+      "error": false,
+      "data": [
+        {
+          "effcap_id": "EFC0002"
+        }
+      ]    
     }
     ```
 * **Error Response (500)**:
     ```json
-    { "message": "Gagal menambahkan data" }
+    { "message": "Gagal menambahkan data", "error": true}
     ```
 
 ### Memperbarui Data Kapasitas Efektif
@@ -659,11 +720,11 @@ Endpoint untuk mengelola data kapasitas efektif peralatan.
     ```
 * **Success Response (200)**:
     ```json
-    { "message": "Data berhasil diperbarui" }
+    { "message": "Data berhasil diperbarui", "error": false}
     ```
 * **Error Responses**:
-    * **404**: `{ "message": "Data tidak ditemukan" }`
-    * **500**: `{ "message": "Gagal memperbarui data" }`
+    * **404**: `{ "message": "Data tidak ditemukan", "error": true}`
+    * **500**: `{ "message": "Gagal memperbarui data", "error": true}`
 
 ---
 
@@ -679,23 +740,27 @@ Endpoint untuk mengelola data kendala yang mempengaruhi produksi.
 * **Success Response (200)**:
     * Mengembalikan sebuah **array** dari objek kendala produksi.
     ```json
-    [
-      {
-        "constraint_id": "C0001",
-        "mine_id": "MINE_1",
-        "equipment_id": "EQ001",
-        "week_start": "2025-11-10T00:00:00.000Z",
-        "constraint_type": "Maintenance",
-        "capacity_value": 0,
-        "unit": "Ton",
-        "update_date": "2025-11-09T00:00:00.000Z",
-        "remarks": "Perawatan preventif"
-      }
-    ]
+    {
+      "message": "Data production constraints berhasil diambil",
+      "error": false,
+      "data": [
+        {
+          "constraint_id": "C0001",
+          "mine_id": "MINE_1",
+          "equipment_id": "EQ001",
+          "week_start": "2025-11-10T00:00:00.000Z",
+          "constraint_type": "Maintenance",
+          "capacity_value": 0,
+          "unit": "Ton",
+          "update_date": "2025-11-09T00:00:00.000Z",
+          "remarks": "Perawatan preventif"
+        }
+      ]
+    }
     ```
 * **Error Response (500)**:
     ```json
-    { "message": "Gagal mengambil data production constraints" }
+    { "message": "Gagal mengambil data production constraints", "error": true}
     ```
 
 ### Menambahkan Kendala Produksi
@@ -720,12 +785,17 @@ Endpoint untuk mengelola data kendala yang mempengaruhi produksi.
     ```json
     {
       "message": "Data production constraint berhasil ditambahkan",
-      "constraint_id": "C0002"
+      "error": false,
+      "data": [
+        {
+          "constraint_id": "C0002"
+        }
+      ]
     }
     ```
 * **Error Response (500)**:
     ```json
-    { "message": "Gagal menambahkan data production constraint" }
+    { "message": "Gagal menambahkan data production constraint", "error": true}
     ```
 
 ---
@@ -742,22 +812,26 @@ Endpoint untuk mengelola rencana produksi mingguan.
 * **Success Response (200)**:
     * Mengembalikan sebuah **array** dari objek rencana produksi.
     ```json
-    [
-      {
-        "plan_id": "PLAN0001",
-        "mine_id": "MINE_1",
-        "week_start": "2025-11-10T00:00:00.000Z",
-        "planned_output_ton": 10000,
-        "actual_output_ton": 9500,
-        "target_variance_pct": -5.0,
-        "status": "Completed",
-        "updated_by": "planner_user_id"
-      }
-    ]
+    {
+      "message": "Data production plans berhasil diambil",
+      "error": false,
+      "data": [
+        {
+          "plan_id": "PLAN0001",
+          "mine_id": "MINE_1",
+          "week_start": "2025-11-10T00:00:00.000Z",
+          "planned_output_ton": 10000,
+          "actual_output_ton": 9500,
+          "target_variance_pct": -5.0,
+          "status": "Completed",
+          "updated_by": "planner_user_id"
+        }
+      ]
+    }
     ```
 * **Error Response (500)**:
     ```json
-    { "message": "Gagal mengambil data production plans" }
+    { "message": "Gagal mengambil data production plans", "error": true}
     ```
 
 ### Menambahkan Rencana Produksi
@@ -781,12 +855,17 @@ Endpoint untuk mengelola rencana produksi mingguan.
     ```json
     {
       "message": "Data production plan berhasil ditambahkan",
-      "plan_id": "PLAN0002"
+      "error": false,
+      "data": [
+        {
+          "plan_id": "PLAN0002"
+        }
+      ]
     }
     ```
 * **Error Response (500)**:
     ```json
-    { "message": "Gagal menambahkan data production plan" }
+    { "message": "Gagal menambahkan data production plan", "error": true}
     ```
 
 ### Memperbarui Rencana Produksi
@@ -811,11 +890,11 @@ Endpoint untuk mengelola rencana produksi mingguan.
     ```
 * **Success Response (200)**:
     ```json
-    { "message": "Data berhasil diperbarui" }
+    { "message": "Data berhasil diperbarui", "error": false}
     ```
 * **Error Responses**:
-    * **404**: `{ "message": "Data tidak ditemukan" }`
-    * **500**: `{ "message": "Gagal memperbarui data" }`
+    * **404**: `{ "message": "Data tidak ditemukan", "error": true}`
+    * **500**: `{ "message": "Gagal memperbarui data", "error": true}`
 
 ---
 
@@ -831,21 +910,25 @@ Endpoint untuk mengambil data cuaca.
 * **Success Response (200)**:
     * Mengembalikan sebuah **array** dari objek data cuaca.
     ```json
-    [
-      {
-        "weather_id": "W0001",
-        "mine_id": "MINE_1",
-        "date": "2025-11-10T00:00:00.000Z",
-        "condition": "Rainy",
-        "temperature_c": 24.5,
-        "rainfall_mm": 15.2,
-        "wind_speed_kph": 10
-      }
-    ]
+    {
+      "message": "Data cuaca berhasil diambil",
+      "error": false,
+      "data": [
+        {
+          "weather_id": "W0001",
+          "mine_id": "MINE_1",
+          "date": "2025-11-10T00:00:00.000Z",
+          "condition": "Rainy",
+          "temperature_c": 24.5,
+          "rainfall_mm": 15.2,
+          "wind_speed_kph": 10
+        }
+      ]
+    }
     ```
 * **Error Response (500)**:
     ```json
-    { "message": "Gagal mengambil data cuaca" }
+    { "message": "Gagal mengambil data cuaca", "error": true}
     ```
 
 ---
@@ -862,21 +945,25 @@ Endpoint untuk mengelola data kondisi jalan.
 * **Success Response (200)**:
     * Mengembalikan sebuah **array** dari objek kondisi jalan.
     ```json
-    [
-      {
-        "road_id": "RD001",
-        "mine_id": "M001",
-        "segment_name": "Hauling Road A",
-        "condition_level": "Poor",
-        "accessibility_pct": 60.0,
-        "last_inspection": "2025-11-09T00:00:00.000Z",
-        "remark": "Berlubang setelah hujan"
-      }
-    ]
+    {
+      "message": "Data kondisi jalan berhasil diambil",
+      "error": false,
+      "data": [
+        {
+          "road_id": "RD001",
+          "mine_id": "M001",
+          "segment_name": "Hauling Road A",
+          "condition_level": "Poor",
+          "accessibility_pct": 60.0,
+          "last_inspection": "2025-11-09T00:00:00.000Z",
+          "remark": "Berlubang setelah hujan"
+        }
+      ]
+    }
     ```
 * **Error Response (500)**:
     ```json
-    { "message": "Gagal mengambil data kondisi jalan" }
+    { "message": "Gagal mengambil data kondisi jalan", "error": true}
     ```
 
 ### Memperbarui Kondisi Jalan
@@ -899,11 +986,11 @@ Endpoint untuk mengelola data kondisi jalan.
     ```
 * **Success Response (200)**:
     ```json
-    { "message": "Data berhasil diperbarui" }
+    { "message": "Data berhasil diperbarui", "error": false}
     ```
 * **Error Responses**:
-    * **404**: `{ "message": "Data tidak ditemukan" }`
-    * **500**: `{ "message": "Gagal memperbarui data" }`
+    * **404**: `{ "message": "Data tidak ditemukan", "error": true}`
+    * **500**: `{ "message": "Gagal memperbarui data", "error": true}`
 
 ---
 
@@ -919,23 +1006,27 @@ Endpoint untuk mengelola jadwal pengiriman. Semua endpoint di bagian ini memerlu
 * **Success Response (200)**:
     * Mengembalikan sebuah **array** dari objek jadwal.
     ```json
-    [
-      {
-        "shipment_id": "SHP0001",
-        "mine_id": "MINE_1",
-        "week_start": "2025-11-10T00:00:00.000Z",
-        "vessel_name": "MV Sejahtera",
-        "destination_port": "Port Tokyo",
-        "coal_tonnage": 50000,
-        "etd": "2025-11-12T00:00:00.000Z",
-        "eta": "2025-11-20T00:00:00.000Z",
-        "status": "Scheduled"
-      }
-    ]
+    {
+      "message": "Data jadwal pengiriman berhasil diambil",
+      "error": false,
+      "data":[
+        {
+          "shipment_id": "SHP0001",
+          "mine_id": "MINE_1",
+          "week_start": "2025-11-10T00:00:00.000Z",
+          "vessel_name": "MV Sejahtera",
+          "destination_port": "Port Tokyo",
+          "coal_tonnage": 50000,
+          "etd": "2025-11-12T00:00:00.000Z",
+          "eta": "2025-11-20T00:00:00.000Z",
+          "status": "Scheduled"
+        }
+      ]
+    }
     ```
 * **Error Response (500)**:
     ```json
-    { "message": "Gagal mengambil data jadwal pengiriman" }
+    { "message": "Gagal mengambil data jadwal pengiriman", "error": true}
     ```
 
 ### Mendapatkan Jadwal Pengiriman per ID
@@ -949,20 +1040,26 @@ Endpoint untuk mengelola jadwal pengiriman. Semua endpoint di bagian ini memerlu
     * Mengembalikan sebuah **objek** tunggal.
     ```json
     {
-      "shipment_id": "SHP0001",
-      "mine_id": "MINE_1",
-      "week_start": "2025-11-10T00:00:00.000Z",
-      "vessel_name": "MV Sejahtera",
-      "destination_port": "Port Tokyo",
-      "coal_tonnage": 50000,
-      "etd": "2025-11-12T00:00:00.000Z",
-      "eta": "2025-11-20T00:00:00.000Z",
-      "status": "Scheduled"
+      "message": "Data jadwal pengiriman berhasil diambil",
+      "error": false,
+      "data": [
+        {
+          "shipment_id": "SHP0001",
+          "mine_id": "MINE_1",
+          "week_start": "2025-11-10T00:00:00.000Z",
+          "vessel_name": "MV Sejahtera",
+          "destination_port": "Port Tokyo",
+          "coal_tonnage": 50000,
+          "etd": "2025-11-12T00:00:00.000Z",
+          "eta": "2025-11-20T00:00:00.000Z",
+          "status": "Scheduled"
+        }
+      ]
     }
     ```
 * **Error Responses**:
-    * **404**: `{ "message": "Data tidak ditemukan" }`
-    * **500**: `{ "message": "Gagal mengambil data jadwal pengiriman" }`
+    * **404**: `{ "message": "Data tidak ditemukan", "error": true}`
+    * **500**: `{ "message": "Gagal mengambil data jadwal pengiriman", "error": true}`
 
 ### Menambahkan Jadwal Pengiriman
 
@@ -986,12 +1083,17 @@ Endpoint untuk mengelola jadwal pengiriman. Semua endpoint di bagian ini memerlu
     ```json
     {
       "message": "Jadwal pengiriman berhasil dibuat",
-      "shipment_id": "SHP0002"
+      "error": false,
+      "data": [
+        {
+          "shipment_id": "SHP0002"
+        }
+      ]
     }
     ```
 * **Error Response (500)**:
     ```json
-    { "message": "Gagal membuat jadwal pengiriman" }
+    { "message": "Gagal membuat jadwal pengiriman", "error": true}
     ```
 
 ### Memperbarui Jadwal Pengiriman
@@ -1013,11 +1115,12 @@ Endpoint untuk mengelola jadwal pengiriman. Semua endpoint di bagian ini memerlu
       "eta": "2025-11-26",
       "status": "Confirmed"
     }
+
     ```
 * **Success Response (200)**:
     ```json
-    { "message": "Data berhasil diperbarui" }
+    { "message": "Data berhasil diperbarui", "error": false}
     ```
 * **Error Responses**:
-    * **404**: `{ "message": "Data tidak ditemukan" }`
-    * **500**: `{ "message": "Gagal memperbarui data" }`
+    * **404**: `{ "message": "Data tidak ditemukan", "error": true }`
+    * **500**: `{ "message": "Gagal memperbarui data", "error": true}`
