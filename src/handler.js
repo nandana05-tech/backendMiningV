@@ -4,40 +4,41 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const fs = require('fs').promises;
-const path = require('path');
-const { request } = require('http');
-const { error } = require('console');
+// const { error } = require('console');
+// const fs = require('fs').promises;
+// const path = require('path');
+// const { request } = require('http');
+// const { error } = require('console');
 
-const ALGORITHM = 'aes-256-cbc';
+// const ALGORITHM = 'aes-256-cbc';
 const SECRET_KEY = crypto
   .createHash('sha256')
   .update(String('kuncirahasia'))
   .digest();
-const IV = Buffer.from('1234567890123456');
+// const IV = Buffer.from('1234567890123456');
 
-function encrypt(text) {
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY, iv);
-  let encrypted = cipher.update(text, 'utf8', 'base64');
-  encrypted += cipher.final('base64');
-  return `${iv.toString('hex')  }:${  encrypted}`;
-}
+// function encrypt(text) {
+//   const iv = crypto.randomBytes(16);
+//   const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY, iv);
+//   let encrypted = cipher.update(text, 'utf8', 'base64');
+//   encrypted += cipher.final('base64');
+//   return `${iv.toString('hex')  }:${  encrypted}`;
+// }
 
-function decrypt(encryptedText) {
-  try {
-    const [ivHex, encryptedBase64] = encryptedText.split(':');
-    const iv = Buffer.from(ivHex, 'hex');
-    const decipher = crypto.createDecipheriv(ALGORITHM, SECRET_KEY, iv);
-    let decrypted = decipher.update(encryptedBase64, 'base64', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
-  } catch (err) {
-    console.error('Decrypt error:', err.message);
-    console.error('Teks yang gagal didecrypt:', encryptedText);
-    return null;
-  }
-}
+// function decrypt(encryptedText) {
+//   try {
+//     const [ivHex, encryptedBase64] = encryptedText.split(':');
+//     const iv = Buffer.from(ivHex, 'hex');
+//     const decipher = crypto.createDecipheriv(ALGORITHM, SECRET_KEY, iv);
+//     let decrypted = decipher.update(encryptedBase64, 'base64', 'utf8');
+//     decrypted += decipher.final('utf8');
+//     return decrypted;
+//   } catch (err) {
+//     console.error('Decrypt error:', err.message);
+//     console.error('Teks yang gagal didecrypt:', encryptedText);
+//     return null;
+//   }
+// }
 
 // middleware untuk verifikasi token JWT
 async function verifyToken(req, h) {
@@ -73,7 +74,8 @@ async function verifyToken(req, h) {
   } catch (err) {
     return h
       .response({
-        message: 'Token tidak valid atau sudah kedaluwarsa'
+        message: 'Token tidak valid atau sudah kedaluwarsa',
+        err
       })
       .code(403)
       .takeover();
@@ -290,7 +292,8 @@ exports.loginUser = async (req, h) => {
 
     if (rows.length === 0) {
       return h.response({
-        message: 'Email tidak ditemukan'
+        message: 'Email tidak ditemukan',
+        error: true
       }).code(404);
     }
 
@@ -298,7 +301,7 @@ exports.loginUser = async (req, h) => {
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return h.response({ message: 'Password salah' }).code(401);
+      return h.response({ message: 'Password salah', error: true}).code(401);
     }
 
     const token = jwt.sign({ id: user.id, role: user.role }, SECRET_KEY, {
