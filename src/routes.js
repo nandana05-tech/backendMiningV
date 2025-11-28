@@ -1,35 +1,12 @@
-const {
-  registerUser,
-  loginUser,
-  logoutUser,
-  getUserById,
-  updateUser,
-  deleteUser,
-  forgotPassword,
-  resetPassword,
-  updateRoleUser,
-  getAllMines,
-  getMineById,
-  getAllEquipments,
-  getEquipmentById,
-  createEquipment,
-  updateEquipment,
-  getEffectiveCapacity,
-  createEffectiveCapacity,
-  updateEffectiveCapacity,
-  getProductionConstraints,
-  createProductionConstraint,
-  getProductionPlans,
-  createProductionPlan,
-  updateProductionPlan,
-  getWeatherData,
-  getRoadConditions,
-  updateRoadCondition,
-  getAllShippingSchedules,
-  getShippingScheduleById,
-  createShippingSchedule,
-  updateShippingSchedule,
-} = require('./handler');
+const { registerUser, loginUser, logoutUser, getUserById, updateUser, deleteUser, forgotPassword, resetPassword, updateRoleUser } = require('./handlers/auth.handler');
+const { getEffectiveCapacity, createEffectiveCapacity, updateEffectiveCapacity } = require('./handlers/capacity.handler');
+const { getProductionConstraints, createProductionConstraint } = require('./handlers/constraint.handler');
+const { getAllEquipments, getEquipmentById, createEquipment, updateEquipment } = require('./handlers/equipment.handler');
+const { getAllMines, getMineById } = require('./handlers/mine.handler');
+const { getProductionPlans, createProductionPlan, updateProductionPlan } = require('./handlers/production.handler');
+const { getWeatherData } = require('./handlers/weather.handler');
+const { getRoadConditions, updateRoadCondition } = require('./handlers/road.handler');
+const { getAllShippingSchedules, getShippingScheduleById, createShippingSchedule, updateShippingSchedule } = require('./handlers/shipping.handler');
 
 const routes = [
   // User Management

@@ -1,11 +1,14 @@
 {
   "name": "mining-v",
   "version": "1.0.0",
-  "description": "",
+  "description": "RESTful API for Mining Management System - Managing coal mine operations including equipment, production planning, weather monitoring, and shipping schedules",
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./src/server.js",
-    "lint": "eslint ./src"
+    "lint": "eslint ./src",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",
@@ -15,14 +18,18 @@
     "eslint": "^9.39.1",
     "eslint-config-dicodingacademy": "^0.9.5",
     "globals": "^16.5.0",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.10"
   },
   "dependencies": {
     "@hapi/hapi": "^21.4.3",
     "@hapi/jwt": "^3.2.1",
     "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.2",
+    "mjml": "^4.17.1",
     "mysql2": "^3.15.2",
-    "nodemailer": "^7.0.10"
+    "nodemailer": "^7.0.11",
+    "uuid": "^13.0.0"
   }
 }
