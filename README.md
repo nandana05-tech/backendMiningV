@@ -8,1119 +8,972 @@ Dokumentasi ini merinci cara menggunakan API dari sisi frontend.
 
 ## 🔐 Autentikasi
 
-Sebagian besar endpoint pada API ini memerlukan autentikasi menggunakan **Bearer Token** (JWT).
+Sebagian besar endpoint pada API ini memerlukan autentikasi menggunakan **Bearer Token** (JWT).# Mining Management System API
 
-**Alur Penggunaan:**
+> **Backend API untuk Sistem Manajemen Pertambangan Batubara**
 
-1.  Dapatkan `token` dari endpoint `POST /login`.
-2.  Untuk setiap *request* ke endpoint yang terproteksi, sertakan token tersebut dalam **Authorization Header**.
+Sistem ini menyediakan RESTful API untuk mengelola operasi tambang batubara, termasuk manajemen user, equipment, production planning, weather monitoring, road condition, dan shipping schedules.
 
-**Contoh Header:**
+## 📋 Daftar Isi
 
-Endpoint yang tidak memerlukan autentikasi ditandai sebagai **(Publik)**.
-
----
-
-## Manajemen Pengguna (Autentikasi)
-
-Endpoint yang berkaitan dengan registrasi, login, dan logout.
-
-### Registrasi Pengguna (Publik)
-
-Mendaftarkan pengguna baru ke dalam sistem.
-
-* **Method**: `POST`
-* **Endpoint**: `/register`
-* **Body (JSON)**:
-    ```json
-    {
-      "nama": "Nama Lengkap",
-      "email": "user@example.com",
-      "password": "password123",
-      "role": "admin" 
-    }
-    ```
-* **Success Response (201)**:
-    ```json
-    {
-      "message": "Registrasi berhasil",
-      "error": false,
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    {
-      "message": "Gagal registrasi",
-      "error": true
-    }
-    ```
+- [Fitur Utama](#-fitur-utama)
+- [Tech Stack](#-tech-stack)
+- [Instalasi & Setup](#-instalasi--setup)
+- [Struktur Project](#-struktur-project)
+- [Environment Variables](#-environment-variables)
+- [Menjalankan Aplikasi](#-menjalankan-aplikasi)
+- [Testing](#-testing)
+- [API Documentation](#-api-documentation)
+- [Authentication & Authorization](#-authentication--authorization)
+- [Contributing](#-contributing)
 
 ---
 
-### Login Pengguna (Publik)
+## 🚀 Fitur Utama
 
-Melakukan login untuk mendapatkan token autentikasi.
+### User Management
+- ✅ Registrasi & Login dengan JWT
+- ✅ Role-based access control (Admin, Mine Planner, Shipping Planner)
+- ✅ Password reset dengan email verification
+- ✅ Profile management
 
-* **Method**: `POST`
-* **Endpoint**: `/login`
-* **Body (JSON)**:
-    ```json
-    {
-      "email": "user@example.com",
-      "password": "password123"
-    }
-    ```
-* **Success Response (200)**:
-    > **PENTING**: Simpan `token`, `id`, dan `role` di sisi frontend untuk digunakan pada request selanjutnya.
-    ```json
-    {
-      "message": "Login berhasil",
-      "error": false,
-      "data": {    
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        "id": 1,
-        "role": "admin",
-        "nama": "Nama Lengkap"
-      }
-    }
-    ```
-* **Error Responses**:
-    * **404**: `{ "message": "Email tidak ditemukan", "error": true}`
-    * **401**: `{ "message": "Password salah", "error": true }`
-    * **500**: `{ "message": "Terjadi kesalahan server", "error": true}`
+### Mine Operations
+- ✅ Mine master data management
+- ✅ Equipment inventory tracking
+- ✅ Effective capacity calculation
+- ✅ Production planning & constraints
+- ✅ Weather data monitoring
+- ✅ Road condition tracking
+- ✅ Shipping schedule management
+
+### Features
+- 📄 Comprehensive pagination support
+- 🔐 JWT-based authentication
+- 📧 Email notifications (password reset)
+- 🧪 Complete test coverage
+- 📊 RESTful API design
 
 ---
 
-### Logout Pengguna
+## 🛠 Tech Stack
 
-Menghapus token pengguna dari database.
-
-* **Method**: `DELETE`
-* **Endpoint**: `/logout/{id}`
-* **URL Params**:
-    * `id` (Wajib): ID dari pengguna yang akan logout.
-* **Autentikasi**: **(Publik)**
-    > **Catatan**: Berdasarkan handler `logoutUser` yang diberikan, endpoint ini tidak memanggil `verifyToken`. Endpoint ini akan me-logout pengguna berdasarkan ID yang ada di URL.
-* **Success Response (200)**:
-    ```json
-    {
-      "message": "Logout berhasil",
-      "error": false
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    {
-      "message": "Gagal logout",
-      "error": true
-    }
-    ```
+- **Runtime**: Node.js
+- **Framework**: Hapi.js v21
+- **Database**: MySQL2
+- **Authentication**: JWT (jsonwebtoken)
+- **Password Hashing**: bcrypt
+- **Email**: Nodemailer + MJML templates
+- **Testing**: Jest
+- **Linting**: ESLint (Dicoding Academy config)
+- **Dev Tools**: Nodemon
 
 ---
 
-## Profil Pengguna
+## 📦 Instalasi & Setup
 
-Endpoint untuk mengelola data profil pengguna.
+### Prerequisites
 
-### Mendapatkan Profil Pengguna by ID
+- Node.js (v14 atau lebih baru)
+- MySQL (v5.7 atau lebih baru)
+- npm atau yarn
 
-Mengambil detail informasi seorang pengguna.
+### Langkah Instalasi
 
-* **Method**: `GET`
-* **Endpoint**: `/users/{id}`
-* **Autentikasi**: **Memerlukan Autentikasi** (Bearer Token).
-* **URL Params**:
-    * `id` (Wajib): ID dari pengguna yang ingin dilihat.
-* **Success Response (200)**:
-    ```json
-    {
-      "message": "Profil berhasil diambil",
-      "error": false,
-      "data": {
-        "id": 1,
-        "nama": "Nama Lengkap",
-        "email": "user@example.com",
-        "role": "admin"
-      }
-    }
-    ```
-* **Error Responses**:
-    * **401**: `{ "message": "Token tidak ditemukan", "error": true}`
-    * **403**: `{ "message": "Token tidak valid atau sudah kedaluwarsa", "error": true}`
-    * **404**: `{ "message": "Pengguna tidak ditemukan", "error": true}`
-    * **500**: `{ "message": "Gagal mengambil profil pengguna", "error": true}`
+1. **Clone repository**
+   ```bash
+   git clone <repository-url>
+   cd tpdbKos
+   ```
 
----
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### Memperbarui Profil Pengguna
+3. **Setup database**
+   ```bash
+   # Import database schema
+   mysql -u root -p < miningv.sql
+   ```
 
-Memperbarui nama, email, atau password pengguna.
+4. **Configure environment**
+   ```bash
+   # Copy dan edit file .env
+   cp .env.example .env
+   ```
+   
+   Edit `.env` dengan konfigurasi Anda (lihat [Environment Variables](#-environment-variables))
 
-* **Method**: `PUT`
-* **Endpoint**: `/users/{id}`
-* **Autentikasi**: **Memerlukan Autentikasi** (Bearer Token).
-* **URL Params**:
-    * `id` (Wajib): ID dari pengguna yang akan diperbarui.
-* **Body (JSON)**:
-    * `password` bersifat opsional. Jika tidak disertakan, password tidak akan diubah.
-    ```json
-    {
-      "nama": "Nama Baru",
-      "email": "emailbaru@example.com",
-      "password": "passwordbaru123" 
-    }
-    ```
-* **Success Response (200)**:
-    ```json
-    {
-      "message": "Profil berhasil diperbarui",
-      "error": false
-    }
-    ```
-* **Error Responses**:
-    * **401/403**: (Error terkait token)
-    * **404**: `{ "message": "Pengguna tidak ditemukan", "error": true}`
-    * **500**: `{ "message": "Gagal memperbarui profil pengguna", "error": true}`
+5. **Run development server**
+   ```bash
+   npm start
+   ```
+
+   Server akan berjalan di `http://localhost:5000`
 
 ---
 
-### Memperbarui Role Pengguna (Khusus Admin)
+## 📁 Struktur Project
 
-Mengubah role seorang pengguna (misal: dari "user" menjadi "admin").
-
-* **Method**: `PUT`
-* **Endpoint**: `/users/{id}/role`
-* **Autentikasi**: **Memerlukan Autentikasi Admin** (Bearer Token milik Admin).
-* **URL Params**:
-    * `id` (Wajib): ID dari pengguna yang rolenya akan diubah.
-* **Body (JSON)**:
-    ```json
-    {
-      "role": "admin"
-    }
-    ```
-* **Success Response (200)**:
-    ```json
-    {
-      "message": "Role pengguna berhasil diperbarui",
-      "error": false
-    }
-    ```
-* **Error Responses**:
-    * **401/403**: (Error terkait token)
-    * **403**: `{ "message": "Akses ditolak: hanya admin yang dapat mengakses ini" }`
-    * **400**: `{ "message": "Field role tidak boleh kosong", "error": true}`
-    * **404**: `{ "message": "Pengguna tidak ditemukan", "error": true}`
-    * **500**: `{ "message": "Gagal memperbarui role pengguna", "error": true}`
-
----
-
-### Menghapus Profil Pengguna
-
-Menghapus akun pengguna dari database.
-
-* **Method**: `DELETE`
-* **Endpoint**: `/users/{id}`
-* **Autentikasi**: **Memerlukan Autentikasi** (Bearer Token).
-    > **Catatan**: Endpoint ini dilindungi oleh fungsi `verifyIsUser` (tidak disertakan dalam kode Anda), yang kemungkinan memvalidasi apakah pengguna yang login adalah pemilik akun atau seorang admin.
-* **URL Params**:
-    * `id` (Wajib): ID dari pengguna yang akan dihapus.
-* **Success Response (200)**:
-    ```json
-    {
-      "message": "Profil berhasil dihapus",
-      "error": false
-    }
-    ```
-* **Error Responses**:
-    * **401/403**: (Error terkait token/otorisasi dari `verifyIsUser`)
-    * **404**: `{ "message": "Pengguna tidak ditemukan", "error": true}`
-    * **500**: `{ "message": "Gagal menghapus profil pengguna", "error": true}`
+```
+tpdbKos/
+├── src/
+│   ├── config/
+│   │   └── auth.js              # JWT secret configuration
+│   ├── handlers/
+│   │   ├── auth.handler.js      # Authentication & user management
+│   │   ├── capacity.handler.js  # Effective capacity
+│   │   ├── constraint.handler.js# Production constraints
+│   │   ├── equipment.handler.js # Equipment inventory
+│   │   ├── mine.handler.js      # Mine master data
+│   │   ├── production.handler.js# Production planning
+│   │   ├── road.handler.js      # Road conditions
+│   │   ├── shipping.handler.js  # Shipping schedules
+│   │   ├── user.handler.js      # User profile management
+│   │   └── weather.handler.js   # Weather data
+│   ├── helpers/
+│   │   ├── email.helper.js      # Email utilities
+│   │   └── pagination.helper.js # Pagination utilities
+│   ├── middleware/
+│   │   └── auth.middleware.js   # JWT verification & authorization
+│   ├── templates/
+│   │   └── emails/
+│   │       └── reset-password.mjml # Email template
+│   ├── data.js                  # Database connection
+│   ├── routes.js                # API routes definition
+│   └── server.js                # Server entry point
+├── tests/
+│   ├── helpers/
+│   │   └── test-helpers.js      # Test utilities
+│   ├── equipment.test.js        # Equipment tests
+│   ├── mine.test.js             # Mine tests
+│   ├── operations.test.js       # Production, weather, roads, shipping tests
+│   ├── user.test.js             # User & auth tests
+│   ├── setup.js                 # Jest setup
+│   └── README.md                # Testing documentation
+├── .env                         # Environment variables (not in git)
+├── jest.config.js               # Jest configuration
+├── eslint.config.mjs            # ESLint configuration
+├── package.json                 # Dependencies & scripts
+├── miningv.sql                  # Database schema
+├── TESTING.md                   # Quick testing guide
+└── README.md                    # This file
+```
 
 ---
 
-# Dokumentasi API: Password Reset
+## 🔧 Environment Variables
+
+Buat file `.env` di root project dengan konfigurasi berikut:
+
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=miningv
+
+# JWT Secret
+SECRET_KEY=your-super-secret-jwt-key
+
+# Application
+BASE_URL=http://localhost:5000
+NODE_ENV=development
+
+# Email Configuration (untuk password reset)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
+```
+
+**⚠️ PENTING:**
+- Jangan commit file `.env` ke repository
+- Gunakan strong secret key untuk production
+- Untuk Gmail, gunakan [App Password](https://support.google.com/accounts/answer/185833)
 
 ---
 
-## Alur Reset Password
+## 🏃 Menjalankan Aplikasi
 
-Fitur ini memerlukan dua langkah yang saling terhubung:
+### Development Mode
+```bash
+npm start
+```
+Server akan berjalan dengan auto-reload menggunakan nodemon.
 
-1.  **Meminta Reset (Forgot Password)**: Pengguna memasukkan email mereka. Frontend mengirim email ini ke `POST /forgot-password`. Backend kemudian mengirimkan email berisi link unik ke pengguna.
-2.  **Melakukan Reset (Reset Password)**: Pengguna mengklik link di email mereka, yang akan mengarahkan mereka ke halaman reset password di aplikasi frontend Anda. Halaman ini harus:
-    * Mengekstrak `token` dari URL query parameter.
-    * Menampilkan form untuk "Password Baru".
-    * Mengirim `token` (dari URL) dan `newPassword` (dari form) ke endpoint `POST /reset-password`.
+### Production Mode
+```bash
+node src/server.js
+```
 
-
-
-### Catatan Penting untuk Frontend
-
-Handler backend (`forgotPassword`) saat ini mengirimkan link yang mengarah ke backend itu sendiri:
-`const resetLink = \`http://localhost:5000/reset-password?token=...\`;`
-
-Agar alur ini berfungsi, **link ini harus diubah di backend** agar mengarah ke **halaman reset password di aplikasi frontend Anda**.
-
-**Contoh (jika frontend Anda berjalan di `localhost:3000`):**
-Link yang seharusnya dikirim oleh backend adalah:
-`http://localhost:3000/halaman-reset-password?token=...`
-
-Frontend Anda kemudian bertugas mengambil `token` dari URL tersebut saat halaman dimuat.
+### Linting
+```bash
+npm run lint
+```
 
 ---
 
-## Endpoints
+## 🧪 Testing
 
-### Meminta Link Reset Password
+Project ini dilengkapi dengan comprehensive test suite menggunakan Jest.
 
-Memulai proses reset password dengan mengirimkan email yang berisi token ke pengguna.
+### Menjalankan Tests
 
-* **Method**: `POST`
-* **Endpoint**: `/forgot-password`
-* **Autentikasi**: **(Publik)**
-* **Body (JSON)**:
-    ```json
-    {
-      "email": "user.terdaftar@example.com"
-    }
-    ```
-* **Success Response (200)**:
-    ```json
-    {
-      "message": "Email reset password telah dikirim",
-      "error": false
-    }
-    ```
-* **Error Responses**:
-    * **404**: `{ "message": "Email tidak terdaftar", "error": true}`
-    * **500**: `{ "message": "Gagal mengirim email reset password", "error": true}`
+```bash
+# Run all tests
+npm test
 
----
+# Run tests with coverage
+npm run test:coverage
 
-### Mengatur Password Baru
+# Run tests in watch mode
+npm run test:watch
 
-Mengatur password baru menggunakan token yang valid.
+# Run specific test file
+npm test tests/user.test.js
+```
 
-* **Method**: `POST`
-* **Endpoint**: `/reset-password`
-* **Autentikasi**: **(Publik)**
-* **Body (JSON)**:
-    > **Penting**: `token` didapat dari URL query parameter yang diterima pengguna di email.
-    ```json
-    {
-      "token": "token_yang_didapat_dari_url",
-      "newPassword": "password_baru_yang_kuat"
-    }
-    ```
-* **Success Response (200)**:
-    ```json
-    {
-      "message": "Password berhasil direset",
-      "error": false
-    }
-    ```
-* **Error Responses**:
-    * **400**: `{ "message": "Token tidak valid atau telah kadaluarsa", "error": true }`
-    * **404**: `{ "message": "Token tidak ditemukan", "error": true }`
-    * **500**: `{ "message": "Gagal mereset password", "error": true}`
+### Test Coverage
+
+- **User Management**: 23 tests (authentication, profile, password reset)
+- **Equipment Management**: 8 tests (CRUD operations)
+- **Mine Management**: 3 tests (GET operations)
+- **Operations**: 16 tests (production, weather, roads, shipping)
+
+**Total: 50+ test cases**
+
+Untuk informasi lebih detail tentang testing, lihat [TESTING.md](TESTING.md) atau [tests/README.md](tests/README.md).
 
 ---
 
-## Endpoint Data Tambang
+## 📚 API Documentation
 
-### Mendapatkan Semua Data Tambang
+### Base URL
+```
+http://localhost:5000
+```
 
-Mengambil **seluruh** daftar data tambang yang ada di database.
+### Authentication Header
+Sebagian besar endpoint memerlukan JWT token:
+```
+Authorization: Bearer <your-jwt-token>
+```
 
-* **Method**: `GET`
-* **Endpoint**: `/mines`
-* **Autentikasi**: Memerlukan Bearer Token.
-* **Success Response (200)**:
-    * Mengembalikan sebuah **array** dari objek data tambang.
-    ```json
-    {
-      "message": "Data tambang berhasil diambil",
-      "error": false,
-      "data": 
-          [
-            {
-              "mine_id": "MINE_1",
-              "mine_name": "Tambang Adaro",
-              "location": "Kalimantan Selatan",
-              "region": "Kalsel",
-              "start_date": "2005-10-10T00:00:00.000Z",
-              "status": "Active",
-              "remarks": "Pemasok utama"
-            },
-            {
-              "mine_id": "MINE_2",
-              "mine_name": "Tambang Kaltim Prima",
-              "location": "Kalimantan Timur",
-              "region": "Kaltim",
-              "start_date": "1998-05-20T00:00:00.000Z",
-              "status": "Active",
-              "remarks": null
-            }
-          ]
-  }
-    ```
-* **Error Response (500)**:
-    ```json
-    {
-      "message": "Gagal mengambil data tambang",
-      "error": true
-    }
-    ```
+### Role-Based Access
+
+| Role | Permissions |
+|------|-------------|
+| **admin** | Full access, manage users, update roles |
+| **user** | Basic access, own profile management |
+| **Mine Planner** | Manage equipment, capacity, production, constraints |
+| **Shipping Planner** | Manage shipping schedules |
 
 ---
 
-### Mendapatkan Data Tambang per ID
+## 🔐 Authentication & Authorization
 
-Mengambil data tambang **spesifik** berdasarkan `mine_id`.
+### Alur Authentication
 
-* **Method**: `GET`
-* **Endpoint**: `/mines/{id}`
-* **Autentikasi**: Memerlukan Bearer Token.
-* **URL Params**:
-    * `id` (Wajib): ID unik dari tambang. (Contoh: `/mines/MINE_1`)
-* **Success Response (200)**:
-    * Mengembalikan sebuah **objek** tunggal dari data tambang.
-    ```json
-    {
-      "message": "Data tambang berhasil diambil",
-      "error": false,
-      "data": 
-          [
-            {
-              "mine_id": "MINE_1",
-              "mine_name": "Tambang Adaro",
-              "location": "Kalimantan Selatan",
-              "region": "Kalsel",
-              "start_date": "2005-10-10T00:00:00.000Z",
-              "status": "Active",
-              "remarks": "Pemasok utama"
-            }
-          ]
-    }
-    ```
-* **Error Responses**:
-    * **404 (Not Found)**:
-        ```json
-        {
-          "message": "Data tambang tidak ditemukan",
-          "error": true
-        }
-        ```
-    * **500 (Server Error)**:
-        ```json
-        {
-          "message": "Gagal mengambil data tambang",
-          "error": true
-        }
-        ```
----
+1. **Register** → `POST /register`
+2. **Login** → `POST /login` (dapatkan JWT token)
+3. **Gunakan Token** → Sertakan di header setiap request
+4. **Logout** → `DELETE /logout/{id}`
 
-## Autentikasi & Otorisasi
+### Middleware
 
-Seluruh endpoint di bawah ini memerlukan **Autentikasi** (Bearer Token) dan **Otorisasi** khusus.
-
-* **Autentikasi**: Anda harus menyertakan **Bearer Token** (JWT) yang didapat saat login dalam `Authorization` header pada setiap *request*.
-    **Contoh Header:**
-    ```
-    Authorization: Bearer <token_yang_didapat_saat_login>
-    ```
-* **Otorisasi**: Token yang digunakan *harus* memiliki role yang valid (misalnya, 'Mine Planner'), sesuai dengan verifikasi `verifyMinePlanner` di backend.
-
-**Kemungkinan Error Autentikasi/Otorisasi:**
-* **401 (Unauthorized)**: `{ "message": "Token tidak ditemukan" }`
-* **403 (Forbidden)**: `{ "message": "Token tidak valid..." }` atau `{ "message": "Akses ditolak..." }`
+- `verifyToken`: Validasi JWT token
+- `verifyAdmin`: Validasi role admin
+- `verifyMinePlanner`: Validasi role mine planner
+- `verifyShippingPlanner`: Validasi role shipping planner
+- `verifyIsUser`: Validasi ownership atau admin
 
 ---
 
-## Endpoint Inventaris Peralatan (Equipments)
+## 📖 API Endpoints
 
-Endpoint ini mengelola data dasar peralatan (CRUD - Create, Read, Update, Delete).
+### User Management
 
-### Mendapatkan Semua Data Peralatan
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/register` | Register user baru | Public |
+| POST | `/login` | Login & dapatkan token | Public |
+| DELETE | `/logout/{id}` | Logout user | Public |
+| GET | `/users/{id}` | Get user profile | Required |
+| PUT | `/users/{id}` | Update user profile | Required |
+| PUT | `/users/{id}/role` | Update user role | Admin only |
+| DELETE | `/users/{id}` | Delete user | Required |
+| POST | `/forgot-password` | Request password reset | Public |
+| POST | `/reset-password` | Reset password | Public |
 
-Mengambil **seluruh** daftar peralatan dari inventaris.
+### Mine Management
 
-* **Method**: `GET`
-* **Endpoint**: `/equipments`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **Success Response (200)**:
-    * Mengembalikan sebuah **array** dari objek peralatan.
-    ```json
-    {
-      "message": "Data equipment berhasil diambil",
-      "error": false,
-      "data": [
-        {
-          "equipment_id": "EQ001",
-          "mine_id": "MINE_1",
-          "equipment_type": "Dump Truck",
-          "brand": "Caterpillar",
-          "model": "797F",
-          "base_capacity_ton": 400,
-          "last_maintenance": "2025-10-20T00:00:00.000Z",
-          "operator_id": "OP005"
-        },
-        {
-          "equipment_id": "EQ002",
-          "mine_id": "MINE_2",
-          "equipment_type": "Excavator",
-          "brand": "Komatsu",
-          "model": "PC2000-8",
-          "base_capacity_ton": 120,
-          "last_maintenance": "2025-11-01T00:00:00.000Z",
-          "operator_id": "OP007"
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    {
-      "message": "Gagal mengambil data equipment",
-      "error": true
-    }
-    ```
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/mines` | Get all mines (paginated) | Required |
+| GET | `/mines/{id}` | Get mine by ID | Required |
 
----
+### Equipment Management
 
-### Mendapatkan Data Peralatan per ID
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/equipments` | Get all equipments (paginated) | Mine Planner |
+| GET | `/equipments/{id}` | Get equipment by ID | Mine Planner |
+| POST | `/equipments` | Create new equipment | Mine Planner |
+| PUT | `/equipments/{id}` | Update equipment | Mine Planner |
 
-Mengambil data peralatan **spesifik** berdasarkan `equipment_id`.
+### Effective Capacity
 
-* **Method**: `GET`
-* **Endpoint**: `/equipments/{id}`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **URL Params**:
-    * `id` (Wajib): ID unik dari peralatan. (Contoh: `/equipments/EQ001`)
-* **Success Response (200)**:
-    * Mengembalikan sebuah **objek** tunggal dari data peralatan.
-    ```json
-    {
-      "message": "Data equipment berhasil diambil",
-      "error": false,
-      "data": [
-        {
-          "equipment_id": "EQ001",
-          "mine_id": "MINE_1",
-          "equipment_type": "Dump Truck",
-          "brand": "Caterpillar",
-          "model": "797F",
-          "base_capacity_ton": 400,
-          "last_maintenance": "2025-10-20T00:00:00.000Z",
-          "operator_id": "OP005"
-        }
-      ]
-    }
-    ```
-* **Error Responses**:
-    * **404 (Not Found)**:
-        ```json
-        {
-          "message": "Equipment tidak ditemukan",
-          "error": true
-        }
-        ```
-    * **500 (Server Error)**:
-        ```json
-        {
-          "message": "Gagal mengambil data equipment",
-          "error": true
-        }
-        ```
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/effective-capacity` | Get all capacity data | Mine Planner |
+| POST | `/effective-capacity` | Create capacity data | Mine Planner |
+| PUT | `/effective-capacity/{id}` | Update capacity data | Mine Planner |
+
+### Production Constraints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/production-constraints` | Get all constraints | Mine Planner |
+| POST | `/production-constraints` | Create constraint | Mine Planner |
+
+### Production Plans
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/production-plans` | Get all plans (paginated) | Required |
+| POST | `/production-plans` | Create production plan | Mine Planner |
+| PUT | `/production-plans/{id}` | Update production plan | Mine Planner |
+
+### Weather Data
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/weather` | Get weather data (paginated) | Required |
+
+### Road Conditions
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/roads` | Get all road conditions | Required |
+| PUT | `/roads/{id}` | Update road condition | Mine Planner |
+
+### Shipping Schedules
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/shipping-schedules` | Get all schedules (paginated) | Shipping Planner |
+| GET | `/shipping-schedules/{id}` | Get schedule by ID | Shipping Planner |
+| POST | `/shipping-schedules` | Create schedule | Shipping Planner |
+| PUT | `/shipping-schedules/{id}` | Update schedule | Shipping Planner |
 
 ---
 
-### Menambahkan Peralatan Baru
+## 📄 Pagination
 
-Membuat entri peralatan baru di inventaris. ID Peralatan (`equipment_id`) akan dibuat secara otomatis oleh server.
+Kebanyakan GET endpoints mendukung pagination dengan cursor-based pagination:
 
-* **Method**: `POST`
-* **Endpoint**: `/equipments`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **Body (JSON)**:
-    ```json
-    {
-      "mine_id": "MINE_1",
-      "equipment_type": "Shovel",
-      "brand": "P&H",
-      "model": "4100XPC",
-      "base_capacity_ton": 100,
-      "last_maintenance": "2025-11-10",
-      "operator_id": "OP010"
-    }
-    ```
-* **Success Response (201)**:
-    ```json
-    {
-      "message": "Equipment berhasil ditambahkan",
-      "error": false,
-      "data": [
-        {
-          "equipment_id": "EQ003"
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    {
-      "message": "Gagal menambahkan equipment",
-      "error": true
-    }
-    ```
+### Query Parameters
+```
+?limit=20              # Jumlah items per page (default: 20)
+?cursor=<cursor>       # Cursor untuk page berikutnya
+?start=2025-01-01      # Filter tanggal mulai
+?end=2025-12-31        # Filter tanggal akhir
+?all=true              # Get semua data tanpa pagination
+```
+
+### Response Format
+```json
+{
+  "message": "Success",
+  "error": false,
+  "limit": 20,
+  "nextCursor": "2025-11-27|ID123",
+  "total": 150,
+  "data": [...]
+}
+```
 
 ---
 
-### Memperbarui Data Peralatan
+## 🔍 Response Format
 
-Memperbarui data peralatan yang sudah ada berdasarkan `equipment_id`.
+### Success Response
+```json
+{
+  "message": "Operation successful",
+  "error": false,
+  "data": { ... }
+}
+```
 
-* **Method**: `PUT`
-* **Endpoint**: `/equipments/{id}`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **URL Params**:
-    * `id` (Wajib): ID unik dari peralatan yang akan diperbarui. (Contoh: `/equipments/EQ003`)
-* **Body (JSON)**:
-    * Kirim semua field, bahkan yang tidak berubah.
-    ```json
-    {
-      "mine_id": "MINE_1",
-      "equipment_type": "Shovel",
-      "brand": "P&H",
-      "model": "4100XPC-M",
-      "base_capacity_ton": 105,
-      "last_maintenance": "2025-11-10",
-      "operator_id": "OP011"
-    }
-    ```
-* **Success Response (200)**:
-    ```json
-    {
-      "message": "Equipment berhasil diperbarui",
-      "error": false
-    }
-    ```
-* **Error Responses**:
-    * **404 (Not Found)**:
-        ```json
-        {
-          "message": "Equipment tidak ditemukan",
-          "error": true
-        }
-        ```
-    * **500 (Server Error)**:
-        ```json
-        {
-          "message": "Gagal memperbarui equipment",
-          "error": true
-        }
-        ```
+### Error Response
+```json
+{
+  "message": "Error description",
+  "error": true
+}
+```
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | OK - Request berhasil |
+| 201 | Created - Resource berhasil dibuat |
+| 400 | Bad Request - Invalid input |
+| 401 | Unauthorized - Token tidak valid/expired |
+| 403 | Forbidden - Tidak punya akses |
+| 404 | Not Found - Resource tidak ditemukan |
+| 500 | Server Error - Internal server error |
 
 ---
 
-## Kapasitas Efektif (Effective Capacity)
+## 💡 Best Practices
 
-Endpoint untuk mengelola data kapasitas efektif peralatan.
+### 1. Security
+- Selalu gunakan HTTPS di production
+- Gunakan strong password untuk database dan JWT secret
+- Implementasikan rate limiting
+- Validate semua user input
+- Sanitize data sebelum menyimpan ke database
 
-### Mendapatkan Semua Data Kapasitas Efektif
+### 2. Performance
+- Gunakan pagination untuk large datasets
+- Implement caching untuk frequently accessed data
+- Optimize database queries dengan indexes
+- Monitor query performance
 
-* **Method**: `GET`
-* **Endpoint**: `/effective-capacity`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **Success Response (200)**:
-    * Mengembalikan sebuah **array** dari objek kapasitas efektif.
-    ```json
-    {
-      "message": "Data effective capacity berhasil diambil",
-      "error": false,
-      "data": [
-        {
-          "effcap_id": "EFC0001",
-          "mine_id": "MINE_1",
-          "equipment_id": "EQ001",
-          "week_start": "2025-11-10T00:00:00.000Z",
-          "distance_km": 5.5,
-          "road_condition": "Good",
-          "weather_condition": "Clear",
-          "availability_pct": 95.0,
-          "effective_capacity_ton_day": 1500,
-          "remark": "Operasi normal"
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    { "message": "Gagal mengambil data effective capacity", "error": true}
-    ```
-
-### Menambahkan Data Kapasitas Efektif
-
-* **Method**: `POST`
-* **Endpoint**: `/effective-capacity`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **Body (JSON)**:
-    ```json
-    {
-      "mine_id": "MINE_1",
-      "equipment_id": "EQ001",
-      "week_start": "2025-11-17",
-      "distance_km": 5.5,
-      "road_condition": "Wet",
-      "weather_condition": "Rain",
-      "availability_pct": 90.0,
-      "effective_capacity_ton_day": 1350,
-      "remark": "Musim hujan"
-    }
-    ```
-* **Success Response (201)**:
-    ```json
-    {
-      "message": "Data effective capacity berhasil ditambahkan",
-      "error": false,
-      "data": [
-        {
-          "effcap_id": "EFC0002"
-        }
-      ]    
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    { "message": "Gagal menambahkan data", "error": true}
-    ```
-
-### Memperbarui Data Kapasitas Efektif
-
-* **Method**: `PUT`
-* **Endpoint**: `/effective-capacity/{id}`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **URL Params**:
-    * `id` (Wajib): ID dari data kapasitas efektif (Contoh: `EFC0002`).
-* **Body (JSON)**:
-    * Kirim semua field, bahkan yang tidak berubah.
-    ```json
-    {
-      "mine_id": "MINE_1",
-      "equipment_id": "EQ001",
-      "week_start": "2025-11-17",
-      "distance_km": 5.5,
-      "road_condition": "Wet",
-      "weather_condition": "Heavy Rain",
-      "availability_pct": 85.0,
-      "effective_capacity_ton_day": 1200,
-      "remark": "Musim hujan lebat"
-    }
-    ```
-* **Success Response (200)**:
-    ```json
-    { "message": "Data berhasil diperbarui", "error": false}
-    ```
-* **Error Responses**:
-    * **404**: `{ "message": "Data tidak ditemukan", "error": true}`
-    * **500**: `{ "message": "Gagal memperbarui data", "error": true}`
+### 3. Error Handling
+- Log semua errors dengan detail yang cukup
+- Return user-friendly error messages
+- Jangan expose sensitive information di error messages
 
 ---
 
-## Kendala Produksi (Production Constraints)
+## 🤝 Contributing
 
-Endpoint untuk mengelola data kendala yang mempengaruhi produksi.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### Mendapatkan Semua Kendala Produksi
+### Development Guidelines
 
-* **Method**: `GET`
-* **Endpoint**: `/production-constraints`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **Success Response (200)**:
-    * Mengembalikan sebuah **array** dari objek kendala produksi.
-    ```json
-    {
-      "message": "Data production constraints berhasil diambil",
-      "error": false,
-      "data": [
-        {
-          "constraint_id": "C0001",
-          "mine_id": "MINE_1",
-          "equipment_id": "EQ001",
-          "week_start": "2025-11-10T00:00:00.000Z",
-          "constraint_type": "Maintenance",
-          "capacity_value": 0,
-          "unit": "Ton",
-          "update_date": "2025-11-09T00:00:00.000Z",
-          "remarks": "Perawatan preventif"
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    { "message": "Gagal mengambil data production constraints", "error": true}
-    ```
-
-### Menambahkan Kendala Produksi
-
-* **Method**: `POST`
-* **Endpoint**: `/production-constraints`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **Body (JSON)**:
-    * `update_date` akan diisi otomatis oleh server.
-    ```json
-    {
-      "mine_id": "MINE_1",
-      "equipment_id": "EQ002",
-      "week_start": "2025-11-17",
-      "constraint_type": "Operational",
-      "capacity_value": 500,
-      "unit": "Ton/Day",
-      "remarks": "Kekurangan operator"
-    }
-    ```
-* **Success Response (201)**:
-    ```json
-    {
-      "message": "Data production constraint berhasil ditambahkan",
-      "error": false,
-      "data": [
-        {
-          "constraint_id": "C0002"
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    { "message": "Gagal menambahkan data production constraint", "error": true}
-    ```
+- Follow ESLint configuration
+- Write tests for new features
+- Update documentation
+- Use meaningful commit messages
 
 ---
 
-## Rencana Produksi (Production Plans)
+## 📝 License
 
-Endpoint untuk mengelola rencana produksi mingguan.
-
-### Mendapatkan Semua Rencana Produksi
-
-* **Method**: `GET`
-* **Endpoint**: `/production-plans`
-* **Autentikasi**: **Memerlukan Token (Role Apapun)**.
-* **Success Response (200)**:
-    * Mengembalikan sebuah **array** dari objek rencana produksi.
-    ```json
-    {
-      "message": "Data production plans berhasil diambil",
-      "error": false,
-      "data": [
-        {
-          "plan_id": "PLAN0001",
-          "mine_id": "MINE_1",
-          "week_start": "2025-11-10T00:00:00.000Z",
-          "planned_output_ton": 10000,
-          "actual_output_ton": 9500,
-          "target_variance_pct": -5.0,
-          "status": "Completed",
-          "updated_by": "planner_user_id"
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    { "message": "Gagal mengambil data production plans", "error": true}
-    ```
-
-### Menambahkan Rencana Produksi
-
-* **Method**: `POST`
-* **Endpoint**: `/production-plans`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **Body (JSON)**:
-    ```json
-    {
-      "mine_id": "MINE_1",
-      "week_start": "2025-11-17",
-      "planned_output_ton": 12000,
-      "actual_output_ton": 0,
-      "target_variance_pct": 0,
-      "status": "Pending",
-      "updated_by": "planner_user_id_002"
-    }
-    ```
-* **Success Response (201)**:
-    ```json
-    {
-      "message": "Data production plan berhasil ditambahkan",
-      "error": false,
-      "data": [
-        {
-          "plan_id": "PLAN0002"
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    { "message": "Gagal menambahkan data production plan", "error": true}
-    ```
-
-### Memperbarui Rencana Produksi
-
-* **Method**: `PUT`
-* **Endpoint**: `/production-plans/{id}`
-* **Autentikasi**: Memerlukan Token (Role: Mine Planner).
-* **URL Params**:
-    * `id` (Wajib): ID dari rencana produksi (Contoh: `PLAN0002`).
-* **Body (JSON)**:
-    * Sering digunakan untuk memperbarui `actual_output_ton` dan `status`.
-    ```json
-    {
-      "mine_id": "MINE_1",
-      "week_start": "2025-11-17",
-      "planned_output_ton": 12000,
-      "actual_output_ton": 11500,
-      "target_variance_pct": -4.17,
-      "status": "In Progress",
-      "updated_by": "planner_user_id_002"
-    }
-    ```
-* **Success Response (200)**:
-    ```json
-    { "message": "Data berhasil diperbarui", "error": false}
-    ```
-* **Error Responses**:
-    * **404**: `{ "message": "Data tidak ditemukan", "error": true}`
-    * **500**: `{ "message": "Gagal memperbarui data", "error": true}`
+This project is licensed under the ISC License.
 
 ---
 
-## Data Cuaca (Weather)
+## 👥 Authors
 
-Endpoint untuk mengambil data cuaca.
-
-### Mendapatkan Semua Data Cuaca
-
-* **Method**: `GET`
-* **Endpoint**: `/weather`
-* **Autentikasi**: Memerlukan Token (Role Apapun).
-* **Success Response (200)**:
-    * Mengembalikan sebuah **array** dari objek data cuaca.
-    ```json
-    {
-      "message": "Data cuaca berhasil diambil",
-      "error": false,
-      "data": [
-        {
-          "weather_id": "W0001",
-          "mine_id": "MINE_1",
-          "date": "2025-11-10T00:00:00.000Z",
-          "condition": "Rainy",
-          "temperature_c": 24.5,
-          "rainfall_mm": 15.2,
-          "wind_speed_kph": 10
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    { "message": "Gagal mengambil data cuaca", "error": true}
-    ```
+- Backend Development Team
 
 ---
 
-## Kondisi Jalan (Roads)
+## 🆘 Support
 
-Endpoint untuk mengelola data kondisi jalan.
-
-### Mendapatkan Semua Kondisi Jalan
-
-* **Method**: `GET`
-* **Endpoint**: `/roads`
-* **Autentikasi**: Memerlukan Token (Role Apapun).
-* **Success Response (200)**:
-    * Mengembalikan sebuah **array** dari objek kondisi jalan.
-    ```json
-    {
-      "message": "Data kondisi jalan berhasil diambil",
-      "error": false,
-      "data": [
-        {
-          "road_id": "RD001",
-          "mine_id": "M001",
-          "segment_name": "Hauling Road A",
-          "condition_level": "Poor",
-          "accessibility_pct": 60.0,
-          "last_inspection": "2025-11-09T00:00:00.000Z",
-          "remark": "Berlubang setelah hujan"
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    { "message": "Gagal mengambil data kondisi jalan", "error": true}
-    ```
-
-### Memperbarui Kondisi Jalan
-
-* **Method**: `PUT`
-* **Endpoint**: `/roads/{id}`
-* **Autentikasi**: Memerlukan Token (Role: **Mine Planner**).
-* **URL Params**:
-    * `id` (Wajib): ID dari segmen jalan (Contoh: `RD001`).
-* **Body (JSON)**:
-    ```json
-    {
-      "mine_id": "MINE_1",
-      "segment_name": "Hauling Road A",
-      "condition_level": "Fair",
-      "accessibility_pct": 85.0,
-      "last_inspection": "2025-11-10",
-      "remark": "Sudah diperbaiki"
-    }
-    ```
-* **Success Response (200)**:
-    ```json
-    { "message": "Data berhasil diperbarui", "error": false}
-    ```
-* **Error Responses**:
-    * **404**: `{ "message": "Data tidak ditemukan", "error": true}`
-    * **500**: `{ "message": "Gagal memperbarui data", "error": true}`
+Untuk pertanyaan atau issue, silakan buat issue di repository atau hubungi tim development.
 
 ---
 
-## Jadwal Pengiriman (Shipping Schedules)
+## 📚 Additional Documentation
 
-Endpoint untuk mengelola jadwal pengiriman. Semua endpoint di bagian ini memerlukan role **Shipping Planner**.
+- **[TESTING.md](TESTING.md)** - Quick testing guide
+- **[tests/README.md](tests/README.md)** - Comprehensive testing documentation
+- **[API_DETAILED.md](API_DETAILED.md)** - Detailed API documentation (original README content)
 
-### Mendapatkan Semua Jadwal Pengiriman
+---
 
-* **Method**: `GET`
-* **Endpoint**: `/shipping-schedules`
-* **Autentikasi**: Memerlukan Token (Role: **Shipping Planner**).
-* **Success Response (200)**:
-    * Mengembalikan sebuah **array** dari objek jadwal.
-    ```json
-    {
-      "message": "Data jadwal pengiriman berhasil diambil",
-      "error": false,
-      "data":[
-        {
-          "shipment_id": "SHP0001",
-          "mine_id": "MINE_1",
-          "week_start": "2025-11-10T00:00:00.000Z",
-          "vessel_name": "MV Sejahtera",
-          "destination_port": "Port Tokyo",
-          "coal_tonnage": 50000,
-          "etd": "2025-11-12T00:00:00.000Z",
-          "eta": "2025-11-20T00:00:00.000Z",
-          "status": "Scheduled"
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    { "message": "Gagal mengambil data jadwal pengiriman", "error": true}
-    ```
+**Happy Coding! 🚀**# Mining Management System API
 
-### Mendapatkan Jadwal Pengiriman per ID
+> **Backend API untuk Sistem Manajemen Pertambangan Batubara**
 
-* **Method**: `GET`
-* **Endpoint**: `/shipping-schedules/{id}`
-* **Autentikasi**: Memerlukan Token (Role: **Shipping Planner**).
-* **URL Params**:
-    * `id` (Wajib): ID dari jadwal pengiriman (Contoh: `SHP0001`).
-* **Success Response (200)**:
-    * Mengembalikan sebuah **objek** tunggal.
-    ```json
-    {
-      "message": "Data jadwal pengiriman berhasil diambil",
-      "error": false,
-      "data": [
-        {
-          "shipment_id": "SHP0001",
-          "mine_id": "MINE_1",
-          "week_start": "2025-11-10T00:00:00.000Z",
-          "vessel_name": "MV Sejahtera",
-          "destination_port": "Port Tokyo",
-          "coal_tonnage": 50000,
-          "etd": "2025-11-12T00:00:00.000Z",
-          "eta": "2025-11-20T00:00:00.000Z",
-          "status": "Scheduled"
-        }
-      ]
-    }
-    ```
-* **Error Responses**:
-    * **404**: `{ "message": "Data tidak ditemukan", "error": true}`
-    * **500**: `{ "message": "Gagal mengambil data jadwal pengiriman", "error": true}`
+Sistem ini menyediakan RESTful API untuk mengelola operasi tambang batubara, termasuk manajemen user, equipment, production planning, weather monitoring, road condition, dan shipping schedules.
 
-### Menambahkan Jadwal Pengiriman
+## 📋 Daftar Isi
 
-* **Method**: `POST`
-* **Endpoint**: `/shipping-schedules`
-* **Autentikasi**: Memerlukan Token (Role: **Shipping Planner**).
-* **Body (JSON)**:
-    ```json
-    {
-      "mine_id": "MINE_2",
-      "week_start": "2025-11-17",
-      "vessel_name": "MV Berkah",
-      "destination_port": "Port Shanghai",
-      "coal_tonnage": 75000,
-      "etd": "2025-11-18",
-      "eta": "2025-11-25",
-      "status": "Pending"
-    }
-    ```
-* **Success Response (201)**:
-    ```json
-    {
-      "message": "Jadwal pengiriman berhasil dibuat",
-      "error": false,
-      "data": [
-        {
-          "shipment_id": "SHP0002"
-        }
-      ]
-    }
-    ```
-* **Error Response (500)**:
-    ```json
-    { "message": "Gagal membuat jadwal pengiriman", "error": true}
-    ```
+- [Fitur Utama](#-fitur-utama)
+- [Tech Stack](#-tech-stack)
+- [Instalasi & Setup](#-instalasi--setup)
+- [Struktur Project](#-struktur-project)
+- [Environment Variables](#-environment-variables)
+- [Menjalankan Aplikasi](#-menjalankan-aplikasi)
+- [Testing](#-testing)
+- [API Documentation](#-api-documentation)
+- [Authentication & Authorization](#-authentication--authorization)
+- [Contributing](#-contributing)
 
-### Memperbarui Jadwal Pengiriman
+---
 
-* **Method**: `PUT`
-* **Endpoint**: `/shipping-schedules/{id}`
-* **Autentikasi**: Memerlukan Token (Role: **Shipping Planner**).
-* **URL Params**:
-    * `id` (Wajib): ID dari jadwal yang akan diperbarui (Contoh: `SHP0002`).
-* **Body (JSON)**:
-    ```json
-    {
-      "mine_id": "MINE_2",
-      "week_start": "2025-11-17",
-      "vessel_name": "MV Berkah",
-      "destination_port": "Port Shanghai",
-      "coal_tonnage": 75000,
-      "etd": "2025-11-19",
-      "eta": "2025-11-26",
-      "status": "Confirmed"
-    }
+## 🚀 Fitur Utama
 
-    ```
-* **Success Response (200)**:
-    ```json
-    { "message": "Data berhasil diperbarui", "error": false}
-    ```
-* **Error Responses**:
-    * **404**: `{ "message": "Data tidak ditemukan", "error": true }`
-    * **500**: `{ "message": "Gagal memperbarui data", "error": true}`
+### User Management
+- ✅ Registrasi & Login dengan JWT
+- ✅ Role-based access control (Admin, Mine Planner, Shipping Planner)
+- ✅ Password reset dengan email verification
+- ✅ Profile management
+
+### Mine Operations
+- ✅ Mine master data management
+- ✅ Equipment inventory tracking
+- ✅ Effective capacity calculation
+- ✅ Production planning & constraints
+- ✅ Weather data monitoring
+- ✅ Road condition tracking
+- ✅ Shipping schedule management
+
+### Features
+- 📄 Comprehensive pagination support
+- 🔐 JWT-based authentication
+- 📧 Email notifications (password reset)
+- 🧪 Complete test coverage
+- 📊 RESTful API design
+
+---
+
+## 🛠 Tech Stack
+
+- **Runtime**: Node.js
+- **Framework**: Hapi.js v21
+- **Database**: MySQL2
+- **Authentication**: JWT (jsonwebtoken)
+- **Password Hashing**: bcrypt
+- **Email**: Nodemailer + MJML templates
+- **Testing**: Jest
+- **Linting**: ESLint (Dicoding Academy config)
+- **Dev Tools**: Nodemon
+
+---
+
+## 📦 Instalasi & Setup
+
+### Prerequisites
+
+- Node.js (v14 atau lebih baru)
+- MySQL (v5.7 atau lebih baru)
+- npm atau yarn
+
+### Langkah Instalasi
+
+1. **Clone repository**
+   ```bash
+   git clone <repository-url>
+   cd tpdbKos
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Setup database**
+   ```bash
+   # Import database schema
+   mysql -u root -p < miningv.sql
+   ```
+
+4. **Configure environment**
+   ```bash
+   # Copy dan edit file .env
+   cp .env.example .env
+   ```
+   
+   Edit `.env` dengan konfigurasi Anda (lihat [Environment Variables](#-environment-variables))
+
+5. **Run development server**
+   ```bash
+   npm start
+   ```
+
+   Server akan berjalan di `http://localhost:5000`
+
+---
+
+## 📁 Struktur Project
+
+```
+tpdbKos/
+├── src/
+│   ├── config/
+│   │   └── auth.js              # JWT secret configuration
+│   ├── handlers/
+│   │   ├── auth.handler.js      # Authentication & user management
+│   │   ├── capacity.handler.js  # Effective capacity
+│   │   ├── constraint.handler.js# Production constraints
+│   │   ├── equipment.handler.js # Equipment inventory
+│   │   ├── mine.handler.js      # Mine master data
+│   │   ├── production.handler.js# Production planning
+│   │   ├── road.handler.js      # Road conditions
+│   │   ├── shipping.handler.js  # Shipping schedules
+│   │   ├── user.handler.js      # User profile management
+│   │   └── weather.handler.js   # Weather data
+│   ├── helpers/
+│   │   ├── email.helper.js      # Email utilities
+│   │   └── pagination.helper.js # Pagination utilities
+│   ├── middleware/
+│   │   └── auth.middleware.js   # JWT verification & authorization
+│   ├── templates/
+│   │   └── emails/
+│   │       └── reset-password.mjml # Email template
+│   ├── data.js                  # Database connection
+│   ├── routes.js                # API routes definition
+│   └── server.js                # Server entry point
+├── tests/
+│   ├── helpers/
+│   │   └── test-helpers.js      # Test utilities
+│   ├── equipment.test.js        # Equipment tests
+│   ├── mine.test.js             # Mine tests
+│   ├── operations.test.js       # Production, weather, roads, shipping tests
+│   ├── user.test.js             # User & auth tests
+│   ├── setup.js                 # Jest setup
+│   └── README.md                # Testing documentation
+├── .env                         # Environment variables (not in git)
+├── jest.config.js               # Jest configuration
+├── eslint.config.mjs            # ESLint configuration
+├── package.json                 # Dependencies & scripts
+├── miningv.sql                  # Database schema
+├── TESTING.md                   # Quick testing guide
+└── README.md                    # This file
+```
+
+---
+
+## 🔧 Environment Variables
+
+Buat file `.env` di root project dengan konfigurasi berikut:
+
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=miningv
+
+# JWT Secret
+SECRET_KEY=your-super-secret-jwt-key
+
+# Application
+BASE_URL=http://localhost:5000
+NODE_ENV=development
+
+# Email Configuration (untuk password reset)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
+```
+
+**⚠️ PENTING:**
+- Jangan commit file `.env` ke repository
+- Gunakan strong secret key untuk production
+- Untuk Gmail, gunakan [App Password](https://support.google.com/accounts/answer/185833)
+
+---
+
+## 🏃 Menjalankan Aplikasi
+
+### Development Mode
+```bash
+npm start
+```
+Server akan berjalan dengan auto-reload menggunakan nodemon.
+
+### Production Mode
+```bash
+node src/server.js
+```
+
+### Linting
+```bash
+npm run lint
+```
+
+---
+
+## 🧪 Testing
+
+Project ini dilengkapi dengan comprehensive test suite menggunakan Jest.
+
+### Menjalankan Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run specific test file
+npm test tests/user.test.js
+```
+
+### Test Coverage
+
+- **User Management**: 23 tests (authentication, profile, password reset)
+- **Equipment Management**: 8 tests (CRUD operations)
+- **Mine Management**: 3 tests (GET operations)
+- **Operations**: 16 tests (production, weather, roads, shipping)
+
+**Total: 50+ test cases**
+
+Untuk informasi lebih detail tentang testing, lihat [TESTING.md](TESTING.md) atau [tests/README.md](tests/README.md).
+
+---
+
+## 📚 API Documentation
+
+### Base URL
+```
+http://localhost:5000
+```
+
+### Authentication Header
+Sebagian besar endpoint memerlukan JWT token:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+### Role-Based Access
+
+| Role | Permissions |
+|------|-------------|
+| **admin** | Full access, manage users, update roles |
+| **user** | Basic access, own profile management |
+| **Mine Planner** | Manage equipment, capacity, production, constraints |
+| **Shipping Planner** | Manage shipping schedules |
+
+---
+
+## 🔐 Authentication & Authorization
+
+### Alur Authentication
+
+1. **Register** → `POST /register`
+2. **Login** → `POST /login` (dapatkan JWT token)
+3. **Gunakan Token** → Sertakan di header setiap request
+4. **Logout** → `DELETE /logout/{id}`
+
+### Middleware
+
+- `verifyToken`: Validasi JWT token
+- `verifyAdmin`: Validasi role admin
+- `verifyMinePlanner`: Validasi role mine planner
+- `verifyShippingPlanner`: Validasi role shipping planner
+- `verifyIsUser`: Validasi ownership atau admin
+
+---
+
+## 📖 API Endpoints
+
+### User Management
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/register` | Register user baru | Public |
+| POST | `/login` | Login & dapatkan token | Public |
+| DELETE | `/logout/{id}` | Logout user | Public |
+| GET | `/users/{id}` | Get user profile | Required |
+| PUT | `/users/{id}` | Update user profile | Required |
+| PUT | `/users/{id}/role` | Update user role | Admin only |
+| DELETE | `/users/{id}` | Delete user | Required |
+| POST | `/forgot-password` | Request password reset | Public |
+| POST | `/reset-password` | Reset password | Public |
+
+### Mine Management
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/mines` | Get all mines (paginated) | Required |
+| GET | `/mines/{id}` | Get mine by ID | Required |
+
+### Equipment Management
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/equipments` | Get all equipments (paginated) | Mine Planner |
+| GET | `/equipments/{id}` | Get equipment by ID | Mine Planner |
+| POST | `/equipments` | Create new equipment | Mine Planner |
+| PUT | `/equipments/{id}` | Update equipment | Mine Planner |
+
+### Effective Capacity
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/effective-capacity` | Get all capacity data | Mine Planner |
+| POST | `/effective-capacity` | Create capacity data | Mine Planner |
+| PUT | `/effective-capacity/{id}` | Update capacity data | Mine Planner |
+
+### Production Constraints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/production-constraints` | Get all constraints | Mine Planner |
+| POST | `/production-constraints` | Create constraint | Mine Planner |
+
+### Production Plans
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/production-plans` | Get all plans (paginated) | Required |
+| POST | `/production-plans` | Create production plan | Mine Planner |
+| PUT | `/production-plans/{id}` | Update production plan | Mine Planner |
+
+### Weather Data
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/weather` | Get weather data (paginated) | Required |
+
+### Road Conditions
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/roads` | Get all road conditions | Required |
+| PUT | `/roads/{id}` | Update road condition | Mine Planner |
+
+### Shipping Schedules
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/shipping-schedules` | Get all schedules (paginated) | Shipping Planner |
+| GET | `/shipping-schedules/{id}` | Get schedule by ID | Shipping Planner |
+| POST | `/shipping-schedules` | Create schedule | Shipping Planner |
+| PUT | `/shipping-schedules/{id}` | Update schedule | Shipping Planner |
+
+---
+
+## 📄 Pagination
+
+Kebanyakan GET endpoints mendukung pagination dengan cursor-based pagination:
+
+### Query Parameters
+```
+?limit=20              # Jumlah items per page (default: 20)
+?cursor=<cursor>       # Cursor untuk page berikutnya
+?start=2025-01-01      # Filter tanggal mulai
+?end=2025-12-31        # Filter tanggal akhir
+?all=true              # Get semua data tanpa pagination
+```
+
+### Response Format
+```json
+{
+  "message": "Success",
+  "error": false,
+  "limit": 20,
+  "nextCursor": "2025-11-27|ID123",
+  "total": 150,
+  "data": [...]
+}
+```
+
+---
+
+## 🔍 Response Format
+
+### Success Response
+```json
+{
+  "message": "Operation successful",
+  "error": false,
+  "data": { ... }
+}
+```
+
+### Error Response
+```json
+{
+  "message": "Error description",
+  "error": true
+}
+```
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | OK - Request berhasil |
+| 201 | Created - Resource berhasil dibuat |
+| 400 | Bad Request - Invalid input |
+| 401 | Unauthorized - Token tidak valid/expired |
+| 403 | Forbidden - Tidak punya akses |
+| 404 | Not Found - Resource tidak ditemukan |
+| 500 | Server Error - Internal server error |
+
+---
+
+## 💡 Best Practices
+
+### 1. Security
+- Selalu gunakan HTTPS di production
+- Gunakan strong password untuk database dan JWT secret
+- Implementasikan rate limiting
+- Validate semua user input
+- Sanitize data sebelum menyimpan ke database
+
+### 2. Performance
+- Gunakan pagination untuk large datasets
+- Implement caching untuk frequently accessed data
+- Optimize database queries dengan indexes
+- Monitor query performance
+
+### 3. Error Handling
+- Log semua errors dengan detail yang cukup
+- Return user-friendly error messages
+- Jangan expose sensitive information di error messages
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow ESLint configuration
+- Write tests for new features
+- Update documentation
+- Use meaningful commit messages
+
+---
+
+## 📝 License
+
+This project is licensed under the ISC License.
+
+---
+
+## 👥 Authors
+
+- Backend Development Team
+
+---
+
+## 🆘 Support
+
+Untuk pertanyaan atau issue, silakan buat issue di repository atau hubungi tim development.
+
+---
+
+## 📚 Additional Documentation
+
+- **[TESTING.md](TESTING.md)** - Quick testing guide
+- **[tests/README.md](tests/README.md)** - Comprehensive testing documentation
+- **[API_DETAILED.md](API_DETAILED.md)** - Detailed API documentation (original README content)
