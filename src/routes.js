@@ -31,6 +31,9 @@ const {
   updateShippingSchedule,
 } = require('./handler');
 
+// Import n8n proxy
+const { proxyToN8N, handleOptions } = require('./n8nProxy');
+
 const routes = [
   // User Management
   { method: 'POST', path: '/register', handler: registerUser },
@@ -83,6 +86,11 @@ const routes = [
   { method: 'GET', path: '/shipping-schedules/{id}', handler: getShippingScheduleById },
   { method: 'POST', path: '/shipping-schedules', handler: createShippingSchedule },
   { method: 'PUT', path: '/shipping-schedules/{id}', handler: updateShippingSchedule },
+
+  // === N8N AI PROXY ===
+  // Proxy untuk menghindari CORS issue dengan n8n
+  { method: 'POST', path: '/ai/chat', handler: proxyToN8N },
+  { method: 'OPTIONS', path: '/ai/chat', handler: handleOptions },
 ];
 
 module.exports = routes;
