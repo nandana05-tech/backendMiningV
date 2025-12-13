@@ -19,7 +19,7 @@ Sistem ini menyediakan RESTful API untuk mengelola operasi tambang batubara, ter
 
 ```bash
 # 1. Clone & Install
-git clone <repository-url>
+git clone https://github.com/nandana05-tech/backendMiningV.git
 cd miningv
 npm install
 
