@@ -7,7 +7,6 @@ function renderMJML(templateName, variables = {}) {
   const filePath = path.join(__dirname, '..', 'templates', 'emails', `${templateName}.mjml`);
   let content = fs.readFileSync(filePath, 'utf8');
 
-  // replace {{variable}}
   Object.keys(variables).forEach(key => {
     content = content.replace(new RegExp(`{{${key}}}`, 'g'), variables[key]);
   });

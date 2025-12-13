@@ -7,9 +7,8 @@ const { getProductionPlans, createProductionPlan, updateProductionPlan } = requi
 const { getWeatherData } = require('./handlers/weather.handler');
 const { getRoadConditions, updateRoadCondition } = require('./handlers/road.handler');
 const { getAllShippingSchedules, getShippingScheduleById, createShippingSchedule, updateShippingSchedule } = require('./handlers/shipping.handler');
+const { checkAIHealth, forecastWeather, classifyWeather, predictCapacity, predictProduction, getAIRecommendations, getLLMRecommendations, chatWithLLM, getLLMStatus, ragHealthCheck, ragQuickHealth, ragGetStats, ragChat, ragRefresh } = require('./handlers/ai.handler');
 
-// Import n8n proxy
-const { proxyToN8N, handleOptions } = require('./n8nProxy');
 
 const routes = [
   // User Management
@@ -64,10 +63,25 @@ const routes = [
   { method: 'POST', path: '/shipping-schedules', handler: createShippingSchedule },
   { method: 'PUT', path: '/shipping-schedules/{id}', handler: updateShippingSchedule },
 
-  // === N8N AI PROXY ===
-  // Proxy untuk menghindari CORS issue dengan n8n
-  { method: 'POST', path: '/ai/chat', handler: proxyToN8N },
-  { method: 'OPTIONS', path: '/ai/chat', handler: handleOptions },
+  // === AI PREDICTIONS ===
+  { method: 'GET', path: '/ai/health', handler: checkAIHealth },
+  { method: 'POST', path: '/ai/weather/forecast', handler: forecastWeather },
+  { method: 'POST', path: '/ai/weather/classify', handler: classifyWeather },
+  { method: 'POST', path: '/ai/capacity/predict', handler: predictCapacity },
+  { method: 'POST', path: '/ai/production/predict', handler: predictProduction },
+  { method: 'POST', path: '/ai/recommendations', handler: getAIRecommendations },
+
+  // === LLM (Agentic AI) ===
+  { method: 'GET', path: '/ai/llm/status', handler: getLLMStatus },
+  { method: 'POST', path: '/ai/llm/recommend', handler: getLLMRecommendations },
+  { method: 'POST', path: '/ai/llm/chat', handler: chatWithLLM },
+
+  // === RAG (Retrieval-Augmented Generation) ===
+  { method: 'GET', path: '/ai/rag/health', handler: ragHealthCheck },
+  { method: 'GET', path: '/ai/rag/health/quick', handler: ragQuickHealth },
+  { method: 'GET', path: '/ai/rag/stats', handler: ragGetStats },
+  { method: 'POST', path: '/ai/rag/chat', handler: ragChat },
+  { method: 'POST', path: '/ai/rag/refresh', handler: ragRefresh },
 ];
 
 module.exports = routes;

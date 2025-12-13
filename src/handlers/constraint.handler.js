@@ -1,6 +1,7 @@
 const pool = require('../data');
 const { verifyMinePlanner } = require('../middleware/auth.middleware');
 const { fetchPaginatedData } = require('../helpers/pagination.helper');
+const { generateNextId, insertRecord, raw } = require('../helpers/database.helper');
 
 exports.getProductionConstraints = async (req, h) => {
   const verified = await verifyMinePlanner(req, h);
@@ -66,39 +67,19 @@ exports.createProductionConstraint = async (req, h) => {
   }
 
   try {
-    const [idResult] = await pool.query(`
-      SELECT CONCAT(
-          'C',
-          LPAD(
-            COALESCE(MAX(CAST(SUBSTRING(constraint_id, 2) AS UNSIGNED)), 0) + 1,
-            4,
-            '0'
-          )
-        ) AS newId
-      FROM production_constraints
-    `); // example: C0001
+    const newId = await generateNextId('production_constraints', 'constraint_id', 'C', 4);
 
-    const newId = idResult[0].newId;
-
-
-    await pool.query(
-      `
-      INSERT INTO production_constraints
-      (constraint_id, mine_id, equipment_id, week_start, constraint_type, 
-      capacity_value, unit, update_date, remarks)
-      VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_DATE(), ?)
-      `,
-      [
-        newId,
-        mine_id,
-        equipment_id,
-        week_start,
-        constraint_type,
-        capacity_value,
-        unit,
-        remarks,
-      ]
-    );
+    await insertRecord('production_constraints', {
+      constraint_id: newId,
+      mine_id,
+      equipment_id,
+      week_start,
+      constraint_type,
+      capacity_value,
+      unit,
+      update_date: raw('CURRENT_DATE()'),
+      remarks,
+    });
 
     return h.response({
       message: 'Data berhasil ditambahkan',

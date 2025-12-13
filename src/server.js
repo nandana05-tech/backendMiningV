@@ -19,7 +19,9 @@ const init = async () => {
   server.ext('onPreResponse', (request, h) => {
     const response = request.response;
     if (response.isBoom) {
-      console.error('ERROR:', response);
+      console.error('ERROR:', response.output.payload);
+      console.error('Request Path:', request.path);
+      console.error('Request Method:', request.method.toUpperCase());
     }
     return h.continue;
   });

@@ -1,6 +1,7 @@
 const pool = require('../data');
 const {verifyShippingPlanner} = require('../middleware/auth.middleware');
 const { fetchPaginatedData } = require('../helpers/pagination.helper');
+const { generateNextId, insertRecord, updateRecord } = require('../helpers/database.helper');
 
 exports.getAllShippingSchedules = async (req, h) => {
   const verified = await verifyShippingPlanner(req, h);
@@ -50,12 +51,15 @@ exports.getShippingScheduleById = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query(
-      'SELECT shipment_id, mine_id, week_start, vessel_name, destination_port, coal_tonnage, etd, eta, status FROM shipping_schedule WHERE shipment_id = ? LIMIT 1',
-      [id]
+    const { findById } = require('../helpers/database.helper');
+    const schedule = await findById(
+      'shipping_schedule',
+      'shipment_id',
+      id,
+      'shipment_id, mine_id, week_start, vessel_name, destination_port, coal_tonnage, etd, eta, status'
     );
 
-    if (result.length === 0) {
+    if (!schedule) {
       return h
         .response({
           message: 'Data tidak ditemukan',
@@ -68,7 +72,7 @@ exports.getShippingScheduleById = async (req, h) => {
       .response({
         message: 'Data berhasil diambil',
         error: false,
-        data: result[0],
+        data: schedule,
       })
       .code(200);
   } catch (err) {
@@ -98,40 +102,21 @@ exports.createShippingSchedule = async (req, h) => {
   } = req.payload;
 
   try {
-    const [result] = await pool.query(`
-      SELECT shipment_id  
-      FROM shipping_schedule
-      ORDER BY shipment_id DESC
-      LIMIT 1
-    `);
+    // Generate ID baru menggunakan helper
+    const newId = await generateNextId('shipping_schedule', 'shipment_id', 'SHP', 4);
 
-    let newId;
-
-    if (result.length === 0) {
-      newId = 'SHP0000';
-    } else {
-      const lastId = result[0].shipment_id;
-      const number = parseInt(lastId.slice(4));
-
-      const next = (number + 1).toString().padStart(4, '0');
-      newId = `SHP${next}`;
-    }
-
-    await pool.query(
-      `INSERT INTO shipping_schedule (shipment_id, mine_id, week_start, vessel_name, destination_port, coal_tonnage, etd, eta, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        newId,
-        mine_id,
-        week_start,
-        vessel_name,
-        destination_port,
-        coal_tonnage,
-        etd,
-        eta,
-        status,
-      ]
-    );
+    // Insert menggunakan helper
+    await insertRecord('shipping_schedule', {
+      shipment_id: newId,
+      mine_id,
+      week_start,
+      vessel_name,
+      destination_port,
+      coal_tonnage,
+      etd,
+      eta,
+      status,
+    });
 
     return h
       .response({
@@ -158,6 +143,15 @@ exports.updateShippingSchedule = async (req, h) => {
   if (verified.error) return verified;
 
   const { id } = req.params;
+  
+  // Validasi payload
+  if (!req.payload) {
+    return h.response({
+      message: 'Payload tidak boleh kosong',
+      error: true,
+    }).code(400);
+  }
+
   const {
     mine_id,
     week_start,
@@ -170,25 +164,23 @@ exports.updateShippingSchedule = async (req, h) => {
   } = req.payload;
 
   try {
-    const query = `
-      UPDATE shipping_schedule
-      SET mine_id = ?, week_start = ?, vessel_name = ?, destination_port = ?, coal_tonnage = ?, etd = ?, eta = ?, status = ?
-      WHERE shipment_id = ?
-    `;
+    const result = await updateRecord(
+      'shipping_schedule',
+      {
+        mine_id,
+        week_start,
+        vessel_name,
+        destination_port,
+        coal_tonnage,
+        etd,
+        eta,
+        status,
+      },
+      'shipment_id',
+      id
+    );
 
-    const [result] = await pool.execute(query, [
-      mine_id,
-      week_start,
-      vessel_name,
-      destination_port,
-      coal_tonnage,
-      etd,
-      eta,
-      status,
-      id,
-    ]);
-
-    if (result.affectedRows === 0) {
+    if (!result.success) {
       return h
         .response({
           message: 'Data tidak ditemukan',

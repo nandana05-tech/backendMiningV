@@ -1,6 +1,7 @@
 const pool = require('../data');
 const { verifyToken } = require('../middleware/auth.middleware');
 const { fetchPaginatedData } = require('../helpers/pagination.helper');
+const { findById } = require('../helpers/database.helper');
 
 exports.getAllMines = async (req, h) => {
   const verified = await verifyToken(req, h);
@@ -48,16 +49,14 @@ exports.getMineById = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query(
-      `
-      SELECT mine_id, mine_name, location, region, start_date, status, remarks
-      FROM mine_master
-      WHERE mine_id = ?
-      `,
-      [id]
+    const mine = await findById(
+      'mine_master',
+      'mine_id',
+      id,
+      'mine_id, mine_name, location, region, start_date, status, remarks'
     );
 
-    if (result.length === 0) {
+    if (!mine) {
       return h
         .response({
           message: 'Data tambang tidak ditemukan',
@@ -70,7 +69,7 @@ exports.getMineById = async (req, h) => {
       .response({
         message: 'Data tambang berhasil diambil',
         error: false,
-        data: result[0],
+        data: mine,
       })
       .code(200);
 

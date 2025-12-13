@@ -1,14 +1,4 @@
-# Dokumentasi API (Frontend)
-
-Dokumentasi ini merinci cara menggunakan API dari sisi frontend.
-
-> **Base URL**: Seluruh endpoint menggunakan URL dasar: `http://localhost:5000`
-
----
-
-## 🔐 Autentikasi
-
-Sebagian besar endpoint pada API ini memerlukan autentikasi menggunakan **Bearer Token** (JWT).# Mining Management System API
+# Mining Management System API
 
 > **Backend API untuk Sistem Manajemen Pertambangan Batubara**
 
@@ -16,283 +6,455 @@ Sistem ini menyediakan RESTful API untuk mengelola operasi tambang batubara, ter
 
 ## 📋 Daftar Isi
 
-- [Fitur Utama](#-fitur-utama)
-- [Tech Stack](#-tech-stack)
+- [Quick Start](#-quick-start)
+- [Frontend Integration Guide](#-frontend-integration-guide)
+- [API Endpoints](#-api-endpoints)
 - [Instalasi & Setup](#-instalasi--setup)
-- [Struktur Project](#-struktur-project)
 - [Environment Variables](#-environment-variables)
-- [Menjalankan Aplikasi](#-menjalankan-aplikasi)
-- [Testing](#-testing)
-- [API Documentation](#-api-documentation)
-- [Authentication & Authorization](#-authentication--authorization)
-- [Contributing](#-contributing)
+- [Tech Stack](#-tech-stack)
 
 ---
 
-## 🚀 Fitur Utama
+## 🚀 Quick Start
 
-### User Management
-- ✅ Registrasi & Login dengan JWT
-- ✅ Role-based access control (Admin, Mine Planner, Shipping Planner)
-- ✅ Password reset dengan email verification
-- ✅ Profile management
-
-### Mine Operations
-- ✅ Mine master data management
-- ✅ Equipment inventory tracking
-- ✅ Effective capacity calculation
-- ✅ Production planning & constraints
-- ✅ Weather data monitoring
-- ✅ Road condition tracking
-- ✅ Shipping schedule management
-
-### Features
-- 📄 Comprehensive pagination support
-- 🔐 JWT-based authentication
-- 📧 Email notifications (password reset)
-- 🧪 Complete test coverage
-- 📊 RESTful API design
-
----
-
-## 🛠 Tech Stack
-
-- **Runtime**: Node.js
-- **Framework**: Hapi.js v21
-- **Database**: MySQL2
-- **Authentication**: JWT (jsonwebtoken)
-- **Password Hashing**: bcrypt
-- **Email**: Nodemailer + MJML templates
-- **Testing**: Jest
-- **Linting**: ESLint (Dicoding Academy config)
-- **Dev Tools**: Nodemon
-
----
-
-## 📦 Instalasi & Setup
-
-### Prerequisites
-
-- Node.js (v14 atau lebih baru)
-- MySQL (v5.7 atau lebih baru)
-- npm atau yarn
-
-### Langkah Instalasi
-
-1. **Clone repository**
-   ```bash
-   git clone <repository-url>
-   cd tpdbKos
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Setup database**
-   ```bash
-   # Import database schema
-   mysql -u root -p < miningv.sql
-   ```
-
-4. **Configure environment**
-   ```bash
-   # Copy dan edit file .env
-   cp .env.example .env
-   ```
-   
-   Edit `.env` dengan konfigurasi Anda (lihat [Environment Variables](#-environment-variables))
-
-5. **Run development server**
-   ```bash
-   npm start
-   ```
-
-   Server akan berjalan di `http://localhost:5000`
-
----
-
-## 📁 Struktur Project
-
-```
-tpdbKos/
-├── src/
-│   ├── config/
-│   │   └── auth.js              # JWT secret configuration
-│   ├── handlers/
-│   │   ├── auth.handler.js      # Authentication & user management
-│   │   ├── capacity.handler.js  # Effective capacity
-│   │   ├── constraint.handler.js# Production constraints
-│   │   ├── equipment.handler.js # Equipment inventory
-│   │   ├── mine.handler.js      # Mine master data
-│   │   ├── production.handler.js# Production planning
-│   │   ├── road.handler.js      # Road conditions
-│   │   ├── shipping.handler.js  # Shipping schedules
-│   │   ├── user.handler.js      # User profile management
-│   │   └── weather.handler.js   # Weather data
-│   ├── helpers/
-│   │   ├── email.helper.js      # Email utilities
-│   │   └── pagination.helper.js # Pagination utilities
-│   ├── middleware/
-│   │   └── auth.middleware.js   # JWT verification & authorization
-│   ├── templates/
-│   │   └── emails/
-│   │       └── reset-password.mjml # Email template
-│   ├── data.js                  # Database connection
-│   ├── routes.js                # API routes definition
-│   └── server.js                # Server entry point
-├── tests/
-│   ├── helpers/
-│   │   └── test-helpers.js      # Test utilities
-│   ├── equipment.test.js        # Equipment tests
-│   ├── mine.test.js             # Mine tests
-│   ├── operations.test.js       # Production, weather, roads, shipping tests
-│   ├── user.test.js             # User & auth tests
-│   ├── setup.js                 # Jest setup
-│   └── README.md                # Testing documentation
-├── .env                         # Environment variables (not in git)
-├── jest.config.js               # Jest configuration
-├── eslint.config.mjs            # ESLint configuration
-├── package.json                 # Dependencies & scripts
-├── miningv.sql                  # Database schema
-├── TESTING.md                   # Quick testing guide
-└── README.md                    # This file
-```
-
----
-
-## 🔧 Environment Variables
-
-Buat file `.env` di root project dengan konfigurasi berikut:
-
-```env
-# Database Configuration
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=miningv
-
-# JWT Secret
-SECRET_KEY=your-super-secret-jwt-key
-
-# Application
-BASE_URL=http://localhost:5000
-NODE_ENV=development
-
-# Email Configuration (untuk password reset)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-```
-
-**⚠️ PENTING:**
-- Jangan commit file `.env` ke repository
-- Gunakan strong secret key untuk production
-- Untuk Gmail, gunakan [App Password](https://support.google.com/accounts/answer/185833)
-
----
-
-## 🏃 Menjalankan Aplikasi
-
-### Development Mode
 ```bash
+# 1. Clone & Install
+git clone <repository-url>
+cd miningv
+npm install
+
+# 2. Setup environment
+cp .env.example .env
+# Edit .env dengan konfigurasi database Anda
+
+# 3. Run server
 npm start
-```
-Server akan berjalan dengan auto-reload menggunakan nodemon.
-
-### Production Mode
-```bash
-node src/server.js
-```
-
-### Linting
-```bash
-npm run lint
+# Server berjalan di http://localhost:5000
 ```
 
 ---
 
-## 🧪 Testing
-
-Project ini dilengkapi dengan comprehensive test suite menggunakan Jest.
-
-### Menjalankan Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run specific test file
-npm test tests/user.test.js
-```
-
-### Test Coverage
-
-- **User Management**: 23 tests (authentication, profile, password reset)
-- **Equipment Management**: 8 tests (CRUD operations)
-- **Mine Management**: 3 tests (GET operations)
-- **Operations**: 16 tests (production, weather, roads, shipping)
-
-**Total: 50+ test cases**
-
-Untuk informasi lebih detail tentang testing, lihat [TESTING.md](TESTING.md) atau [tests/README.md](tests/README.md).
-
----
-
-## 📚 API Documentation
+## 🔌 Frontend Integration Guide
 
 ### Base URL
+
 ```
-http://localhost:5000
+Development: http://localhost:5000
+Production:  https://your-production-domain.com
 ```
 
-### Authentication Header
-Sebagian besar endpoint memerlukan JWT token:
-```
-Authorization: Bearer <your-jwt-token>
-```
+### API Service Setup (Recommended)
 
-### Role-Based Access
+Buat file `api.js` untuk centralized API calls:
 
-| Role | Permissions |
-|------|-------------|
-| **admin** | Full access, manage users, update roles |
-| **user** | Basic access, own profile management |
-| **Mine Planner** | Manage equipment, capacity, production, constraints |
-| **Shipping Planner** | Manage shipping schedules |
+```javascript
+// api.js - API Service untuk Frontend
+
+const BASE_URL = 'http://localhost:5000';
+
+// Helper untuk menyimpan dan mengambil token
+const TokenService = {
+  getToken: () => localStorage.getItem('accessToken'),
+  setToken: (token) => localStorage.setItem('accessToken', token),
+  removeToken: () => localStorage.removeItem('accessToken'),
+  getUserId: () => localStorage.getItem('userId'),
+  setUserId: (id) => localStorage.setItem('userId', id),
+};
+
+// Fetch wrapper dengan error handling
+async function fetchAPI(endpoint, options = {}) {
+  const token = TokenService.getToken();
+  
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+      ...options.headers,
+    },
+    ...options,
+  };
+
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, config);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw { status: response.status, message: data.message || 'Request failed' };
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+}
+
+export { fetchAPI, TokenService, BASE_URL };
+```
 
 ---
 
-## 🔐 Authentication & Authorization
+### 🔐 Authentication
 
-### Alur Authentication
+#### 1. Register User
 
-1. **Register** → `POST /register`
-2. **Login** → `POST /login` (dapatkan JWT token)
-3. **Gunakan Token** → Sertakan di header setiap request
-4. **Logout** → `DELETE /logout/{id}`
+```javascript
+// POST /register
+async function registerUser(userData) {
+  const response = await fetch(`${BASE_URL}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: 'johndoe',
+      email: 'john@example.com',
+      password: 'securePassword123'
+    })
+  });
+  return response.json();
+}
 
-### Middleware
+// Response:
+// { "message": "User created", "error": false, "data": { "id": "uuid", ... } }
+```
 
-- `verifyToken`: Validasi JWT token
-- `verifyAdmin`: Validasi role admin
-- `verifyMinePlanner`: Validasi role mine planner
-- `verifyShippingPlanner`: Validasi role shipping planner
-- `verifyIsUser`: Validasi ownership atau admin
+#### 2. Login & Store Token
+
+```javascript
+// POST /login
+async function login(email, password) {
+  const response = await fetch(`${BASE_URL}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  
+  const result = await response.json();
+  
+  if (!result.error) {
+    // 🔑 Simpan token untuk request selanjutnya
+    localStorage.setItem('accessToken', result.data.accessToken);
+    localStorage.setItem('userId', result.data.id);
+  }
+  
+  return result;
+}
+
+// Response:
+// {
+//   "message": "Login Success",
+//   "error": false,
+//   "data": {
+//     "id": "user-uuid",
+//     "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+//     "role": "Mine Planner"
+//   }
+// }
+```
+
+#### 3. Authenticated Request
+
+```javascript
+// Request dengan Authorization header
+async function getProtectedData(endpoint) {
+  const token = localStorage.getItem('accessToken');
+  
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`  // ⬅️ Wajib untuk endpoint protected
+    }
+  });
+  
+  return response.json();
+}
+```
+
+#### 4. Logout
+
+```javascript
+// DELETE /logout/{id}
+async function logout() {
+  const userId = localStorage.getItem('userId');
+  
+  await fetch(`${BASE_URL}/logout/${userId}`, {
+    method: 'DELETE'
+  });
+  
+  // Clear stored data
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('userId');
+}
+```
+
+---
+
+### 📊 Data Fetching Examples
+
+#### Get All Mines (with Pagination)
+
+```javascript
+// GET /mines?limit=10&cursor=xxx
+async function getMines(limit = 10, cursor = null) {
+  const token = localStorage.getItem('accessToken');
+  let url = `${BASE_URL}/mines?limit=${limit}`;
+  if (cursor) url += `&cursor=${encodeURIComponent(cursor)}`;
+  
+  const response = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  
+  return response.json();
+}
+
+// Response:
+// {
+//   "message": "Mines retrieved",
+//   "error": false,
+//   "limit": 10,
+//   "nextCursor": "2025-11-27|MINE005",  // Gunakan untuk page selanjutnya
+//   "total": 50,
+//   "data": [{ "mine_id": "MINE001", "mine_name": "Site A", ... }]
+// }
+```
+
+#### Get All Data (No Pagination)
+
+```javascript
+// GET /mines?all=true
+async function getAllMines() {
+  const token = localStorage.getItem('accessToken');
+  
+  const response = await fetch(`${BASE_URL}/mines?all=true`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  
+  return response.json();
+}
+```
+
+#### Get Equipment by ID
+
+```javascript
+// GET /equipments/{id}
+async function getEquipmentById(equipmentId) {
+  const token = localStorage.getItem('accessToken');
+  
+  const response = await fetch(`${BASE_URL}/equipments/${equipmentId}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  
+  return response.json();
+}
+```
+
+---
+
+### ✏️ Create & Update Examples
+
+#### Create Equipment (POST)
+
+```javascript
+// POST /equipments
+async function createEquipment(equipmentData) {
+  const token = localStorage.getItem('accessToken');
+  
+  const response = await fetch(`${BASE_URL}/equipments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      equipment_type: 'Excavator',
+      equipment_capacity: 500,
+      operational_status: 'Active',
+      mine_id: 'MINE001'
+    })
+  });
+  
+  return response.json();
+}
+```
+
+#### Update Production Plan (PUT)
+
+```javascript
+// PUT /production-plans/{id}
+async function updateProductionPlan(planId, updateData) {
+  const token = localStorage.getItem('accessToken');
+  
+  const response = await fetch(`${BASE_URL}/production-plans/${planId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      target_production: 15000,
+      actual_production: 14500,
+      status: 'In Progress'
+    })
+  });
+  
+  return response.json();
+}
+```
+
+---
+
+### 🤖 AI Endpoints
+
+#### Weather Forecast
+
+```javascript
+// POST /ai/weather/forecast
+async function forecastWeather(data) {
+  const response = await fetch(`${BASE_URL}/ai/weather/forecast`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      mine_id: 'MINE001',
+      days: 7
+    })
+  });
+  
+  return response.json();
+}
+```
+
+#### Production Prediction
+
+```javascript
+// POST /ai/production/predict
+async function predictProduction(inputData) {
+  const response = await fetch(`${BASE_URL}/ai/production/predict`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      temperature: 28.5,
+      humidity: 75,
+      rainfall: 2.5,
+      equipment_count: 10,
+      road_condition: 'Good'
+    })
+  });
+  
+  return response.json();
+}
+```
+
+#### Chat with RAG (Database Context)
+
+```javascript
+// POST /ai/rag/chat
+async function chatWithRAG(message, history = []) {
+  const response = await fetch(`${BASE_URL}/ai/rag/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: 'Bagaimana kondisi jalan di MINE001?',
+      conversation_history: history,
+      include_rag_context: true
+    })
+  });
+  
+  return response.json();
+}
+```
+
+---
+
+### 📱 React Hook Example
+
+```javascript
+// hooks/useAPI.js
+import { useState, useCallback } from 'react';
+
+const BASE_URL = 'http://localhost:5000';
+
+export function useAPI() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const request = useCallback(async (endpoint, options = {}) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      
+      const response = await fetch(`${BASE_URL}${endpoint}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+        ...options,
+      });
+      
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.message);
+      }
+      
+      return data;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { request, loading, error };
+}
+
+// Usage in Component:
+// const { request, loading, error } = useAPI();
+// const mines = await request('/mines?limit=10');
+```
+
+---
+
+### ⚠️ Error Handling
+
+```javascript
+async function safeAPICall(endpoint, options) {
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, options);
+    const data = await response.json();
+    
+    switch (response.status) {
+      case 401:
+        // Token expired - redirect to login
+        localStorage.removeItem('accessToken');
+        window.location.href = '/login';
+        break;
+      case 403:
+        alert('Anda tidak memiliki akses ke fitur ini');
+        break;
+      case 404:
+        alert('Data tidak ditemukan');
+        break;
+      case 500:
+        alert('Terjadi kesalahan server');
+        break;
+    }
+    
+    return data;
+  } catch (networkError) {
+    alert('Tidak dapat terhubung ke server');
+    throw networkError;
+  }
+}
+```
 
 ---
 
 ## 📖 API Endpoints
 
-### User Management
+### Authentication & User Management
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
@@ -306,83 +468,66 @@ Authorization: Bearer <your-jwt-token>
 | POST | `/forgot-password` | Request password reset | Public |
 | POST | `/reset-password` | Reset password | Public |
 
-### Mine Management
+### Mine Operations
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | GET | `/mines` | Get all mines (paginated) | Required |
 | GET | `/mines/{id}` | Get mine by ID | Required |
-
-### Equipment Management
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/equipments` | Get all equipments (paginated) | Mine Planner |
+| GET | `/equipments` | Get all equipments | Mine Planner |
 | GET | `/equipments/{id}` | Get equipment by ID | Mine Planner |
-| POST | `/equipments` | Create new equipment | Mine Planner |
+| POST | `/equipments` | Create equipment | Mine Planner |
 | PUT | `/equipments/{id}` | Update equipment | Mine Planner |
-
-### Effective Capacity
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/effective-capacity` | Get all capacity data | Mine Planner |
+| GET | `/effective-capacity` | Get capacity data | Mine Planner |
 | POST | `/effective-capacity` | Create capacity data | Mine Planner |
-| PUT | `/effective-capacity/{id}` | Update capacity data | Mine Planner |
-
-### Production Constraints
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/production-constraints` | Get all constraints | Mine Planner |
+| PUT | `/effective-capacity/{id}` | Update capacity | Mine Planner |
+| GET | `/production-constraints` | Get constraints | Mine Planner |
 | POST | `/production-constraints` | Create constraint | Mine Planner |
-
-### Production Plans
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/production-plans` | Get all plans (paginated) | Required |
-| POST | `/production-plans` | Create production plan | Mine Planner |
-| PUT | `/production-plans/{id}` | Update production plan | Mine Planner |
-
-### Weather Data
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/weather` | Get weather data (paginated) | Required |
-
-### Road Conditions
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/roads` | Get all road conditions | Required |
-| PUT | `/roads/{id}` | Update road condition | Mine Planner |
-
-### Shipping Schedules
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/shipping-schedules` | Get all schedules (paginated) | Shipping Planner |
+| GET | `/production-plans` | Get production plans | Required |
+| POST | `/production-plans` | Create plan | Mine Planner |
+| PUT | `/production-plans/{id}` | Update plan | Mine Planner |
+| GET | `/weather` | Get weather data | Required |
+| GET | `/roads` | Get road conditions | Required |
+| PUT | `/roads/{id}` | Update road | Mine Planner |
+| GET | `/shipping-schedules` | Get schedules | Shipping Planner |
 | GET | `/shipping-schedules/{id}` | Get schedule by ID | Shipping Planner |
 | POST | `/shipping-schedules` | Create schedule | Shipping Planner |
 | PUT | `/shipping-schedules/{id}` | Update schedule | Shipping Planner |
+
+### AI Predictions
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/ai/health` | Check AI service health |
+| POST | `/ai/weather/forecast` | Forecast weather |
+| POST | `/ai/weather/classify` | Classify weather condition |
+| POST | `/ai/capacity/predict` | Predict effective capacity |
+| POST | `/ai/production/predict` | Predict production output |
+| POST | `/ai/recommendations` | Get AI recommendations |
+| GET | `/ai/llm/status` | Check LLM status |
+| POST | `/ai/llm/recommend` | LLM recommendations |
+| POST | `/ai/llm/chat` | Chat with LLM |
+| GET | `/ai/rag/health` | RAG system health |
+| GET | `/ai/rag/stats` | RAG statistics |
+| POST | `/ai/rag/chat` | Chat with database context |
+| POST | `/ai/rag/refresh` | Refresh RAG embeddings |
 
 ---
 
 ## 📄 Pagination
 
-Kebanyakan GET endpoints mendukung pagination dengan cursor-based pagination:
-
 ### Query Parameters
-```
-?limit=20              # Jumlah items per page (default: 20)
-?cursor=<cursor>       # Cursor untuk page berikutnya
-?start=2025-01-01      # Filter tanggal mulai
-?end=2025-12-31        # Filter tanggal akhir
-?all=true              # Get semua data tanpa pagination
-```
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `limit` | Items per page (default: 20) | `?limit=10` |
+| `cursor` | Cursor untuk page berikutnya | `?cursor=2025-11-27\|ID123` |
+| `start` | Filter tanggal mulai | `?start=2025-01-01` |
+| `end` | Filter tanggal akhir | `?end=2025-12-31` |
+| `all` | Get semua data | `?all=true` |
 
 ### Response Format
+
 ```json
 {
   "message": "Success",
@@ -399,6 +544,7 @@ Kebanyakan GET endpoints mendukung pagination dengan cursor-based pagination:
 ## 🔍 Response Format
 
 ### Success Response
+
 ```json
 {
   "message": "Operation successful",
@@ -408,6 +554,7 @@ Kebanyakan GET endpoints mendukung pagination dengan cursor-based pagination:
 ```
 
 ### Error Response
+
 ```json
 {
   "message": "Error description",
@@ -420,124 +567,74 @@ Kebanyakan GET endpoints mendukung pagination dengan cursor-based pagination:
 | Code | Description |
 |------|-------------|
 | 200 | OK - Request berhasil |
-| 201 | Created - Resource berhasil dibuat |
+| 201 | Created - Resource dibuat |
 | 400 | Bad Request - Invalid input |
-| 401 | Unauthorized - Token tidak valid/expired |
+| 401 | Unauthorized - Token tidak valid |
 | 403 | Forbidden - Tidak punya akses |
 | 404 | Not Found - Resource tidak ditemukan |
-| 500 | Server Error - Internal server error |
+| 500 | Server Error |
 
 ---
 
-## 💡 Best Practices
+## 📦 Instalasi & Setup
 
-### 1. Security
-- Selalu gunakan HTTPS di production
-- Gunakan strong password untuk database dan JWT secret
-- Implementasikan rate limiting
-- Validate semua user input
-- Sanitize data sebelum menyimpan ke database
+### Prerequisites
 
-### 2. Performance
-- Gunakan pagination untuk large datasets
-- Implement caching untuk frequently accessed data
-- Optimize database queries dengan indexes
-- Monitor query performance
+- Node.js v14+
+- MySQL 5.7+
+- npm atau yarn
 
-### 3. Error Handling
-- Log semua errors dengan detail yang cukup
-- Return user-friendly error messages
-- Jangan expose sensitive information di error messages
+### Langkah Instalasi
 
----
+```bash
+# 1. Clone repository
+git clone <repository-url>
+cd miningv
 
-## 🤝 Contributing
+# 2. Install dependencies
+npm install
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+# 3. Setup environment
+cp .env.example .env
+# Edit .env dengan konfigurasi Anda
 
-### Development Guidelines
-
-- Follow ESLint configuration
-- Write tests for new features
-- Update documentation
-- Use meaningful commit messages
+# 4. Run development server
+npm start
+# Server berjalan di http://localhost:5000
+```
 
 ---
 
-## 📝 License
+## 🔧 Environment Variables
 
-This project is licensed under the ISC License.
+Buat file `.env` dengan konfigurasi:
 
----
+```env
+# Database
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=miningv
 
-## 👥 Authors
+# JWT
+SECRET_KEY=your-super-secret-jwt-key
 
-- Backend Development Team
+# Application
+BASE_URL=http://localhost:5000
+NODE_ENV=development
 
----
+# Email (untuk password reset)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
 
-## 🆘 Support
+# AI Service (optional)
+AI_SERVICE_URL=http://localhost:5001
+OPENAI_API_KEY=sk-your-openai-key
+```
 
-Untuk pertanyaan atau issue, silakan buat issue di repository atau hubungi tim development.
-
----
-
-## 📚 Additional Documentation
-
-- **[TESTING.md](TESTING.md)** - Quick testing guide
-- **[tests/README.md](tests/README.md)** - Comprehensive testing documentation
-- **[API_DETAILED.md](API_DETAILED.md)** - Detailed API documentation (original README content)
-
----
-
-**Happy Coding! 🚀**# Mining Management System API
-
-> **Backend API untuk Sistem Manajemen Pertambangan Batubara**
-
-Sistem ini menyediakan RESTful API untuk mengelola operasi tambang batubara, termasuk manajemen user, equipment, production planning, weather monitoring, road condition, dan shipping schedules.
-
-## 📋 Daftar Isi
-
-- [Fitur Utama](#-fitur-utama)
-- [Tech Stack](#-tech-stack)
-- [Instalasi & Setup](#-instalasi--setup)
-- [Struktur Project](#-struktur-project)
-- [Environment Variables](#-environment-variables)
-- [Menjalankan Aplikasi](#-menjalankan-aplikasi)
-- [Testing](#-testing)
-- [API Documentation](#-api-documentation)
-- [Authentication & Authorization](#-authentication--authorization)
-- [Contributing](#-contributing)
-
----
-
-## 🚀 Fitur Utama
-
-### User Management
-- ✅ Registrasi & Login dengan JWT
-- ✅ Role-based access control (Admin, Mine Planner, Shipping Planner)
-- ✅ Password reset dengan email verification
-- ✅ Profile management
-
-### Mine Operations
-- ✅ Mine master data management
-- ✅ Equipment inventory tracking
-- ✅ Effective capacity calculation
-- ✅ Production planning & constraints
-- ✅ Weather data monitoring
-- ✅ Road condition tracking
-- ✅ Shipping schedule management
-
-### Features
-- 📄 Comprehensive pagination support
-- 🔐 JWT-based authentication
-- 📧 Email notifications (password reset)
-- 🧪 Complete test coverage
-- 📊 RESTful API design
+> ⚠️ **Jangan commit file `.env` ke repository!**
 
 ---
 
@@ -546,434 +643,17 @@ Sistem ini menyediakan RESTful API untuk mengelola operasi tambang batubara, ter
 - **Runtime**: Node.js
 - **Framework**: Hapi.js v21
 - **Database**: MySQL2
-- **Authentication**: JWT (jsonwebtoken)
+- **Authentication**: JWT
 - **Password Hashing**: bcrypt
-- **Email**: Nodemailer + MJML templates
-- **Testing**: Jest
-- **Linting**: ESLint (Dicoding Academy config)
-- **Dev Tools**: Nodemon
-
----
-
-## 📦 Instalasi & Setup
-
-### Prerequisites
-
-- Node.js (v14 atau lebih baru)
-- MySQL (v5.7 atau lebih baru)
-- npm atau yarn
-
-### Langkah Instalasi
-
-1. **Clone repository**
-   ```bash
-   git clone <repository-url>
-   cd tpdbKos
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Setup database**
-   ```bash
-   # Import database schema
-   mysql -u root -p < miningv.sql
-   ```
-
-4. **Configure environment**
-   ```bash
-   # Copy dan edit file .env
-   cp .env.example .env
-   ```
-   
-   Edit `.env` dengan konfigurasi Anda (lihat [Environment Variables](#-environment-variables))
-
-5. **Run development server**
-   ```bash
-   npm start
-   ```
-
-   Server akan berjalan di `http://localhost:5000`
-
----
-
-## 📁 Struktur Project
-
-```
-tpdbKos/
-├── src/
-│   ├── config/
-│   │   └── auth.js              # JWT secret configuration
-│   ├── handlers/
-│   │   ├── auth.handler.js      # Authentication & user management
-│   │   ├── capacity.handler.js  # Effective capacity
-│   │   ├── constraint.handler.js# Production constraints
-│   │   ├── equipment.handler.js # Equipment inventory
-│   │   ├── mine.handler.js      # Mine master data
-│   │   ├── production.handler.js# Production planning
-│   │   ├── road.handler.js      # Road conditions
-│   │   ├── shipping.handler.js  # Shipping schedules
-│   │   ├── user.handler.js      # User profile management
-│   │   └── weather.handler.js   # Weather data
-│   ├── helpers/
-│   │   ├── email.helper.js      # Email utilities
-│   │   └── pagination.helper.js # Pagination utilities
-│   ├── middleware/
-│   │   └── auth.middleware.js   # JWT verification & authorization
-│   ├── templates/
-│   │   └── emails/
-│   │       └── reset-password.mjml # Email template
-│   ├── data.js                  # Database connection
-│   ├── routes.js                # API routes definition
-│   └── server.js                # Server entry point
-├── tests/
-│   ├── helpers/
-│   │   └── test-helpers.js      # Test utilities
-│   ├── equipment.test.js        # Equipment tests
-│   ├── mine.test.js             # Mine tests
-│   ├── operations.test.js       # Production, weather, roads, shipping tests
-│   ├── user.test.js             # User & auth tests
-│   ├── setup.js                 # Jest setup
-│   └── README.md                # Testing documentation
-├── .env                         # Environment variables (not in git)
-├── jest.config.js               # Jest configuration
-├── eslint.config.mjs            # ESLint configuration
-├── package.json                 # Dependencies & scripts
-├── miningv.sql                  # Database schema
-├── TESTING.md                   # Quick testing guide
-└── README.md                    # This file
-```
-
----
-
-## 🔧 Environment Variables
-
-Buat file `.env` di root project dengan konfigurasi berikut:
-
-```env
-# Database Configuration
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=miningv
-
-# JWT Secret
-SECRET_KEY=your-super-secret-jwt-key
-
-# Application
-BASE_URL=http://localhost:5000
-NODE_ENV=development
-
-# Email Configuration (untuk password reset)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-```
-
-**⚠️ PENTING:**
-- Jangan commit file `.env` ke repository
-- Gunakan strong secret key untuk production
-- Untuk Gmail, gunakan [App Password](https://support.google.com/accounts/answer/185833)
-
----
-
-## 🏃 Menjalankan Aplikasi
-
-### Development Mode
-```bash
-npm start
-```
-Server akan berjalan dengan auto-reload menggunakan nodemon.
-
-### Production Mode
-```bash
-node src/server.js
-```
-
-### Linting
-```bash
-npm run lint
-```
-
----
-
-## 🧪 Testing
-
-Project ini dilengkapi dengan comprehensive test suite menggunakan Jest.
-
-### Menjalankan Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run specific test file
-npm test tests/user.test.js
-```
-
-### Test Coverage
-
-- **User Management**: 23 tests (authentication, profile, password reset)
-- **Equipment Management**: 8 tests (CRUD operations)
-- **Mine Management**: 3 tests (GET operations)
-- **Operations**: 16 tests (production, weather, roads, shipping)
-
-**Total: 50+ test cases**
-
-Untuk informasi lebih detail tentang testing, lihat [TESTING.md](TESTING.md) atau [tests/README.md](tests/README.md).
-
----
-
-## 📚 API Documentation
-
-### Base URL
-```
-http://localhost:5000
-```
-
-### Authentication Header
-Sebagian besar endpoint memerlukan JWT token:
-```
-Authorization: Bearer <your-jwt-token>
-```
-
-### Role-Based Access
-
-| Role | Permissions |
-|------|-------------|
-| **admin** | Full access, manage users, update roles |
-| **user** | Basic access, own profile management |
-| **Mine Planner** | Manage equipment, capacity, production, constraints |
-| **Shipping Planner** | Manage shipping schedules |
-
----
-
-## 🔐 Authentication & Authorization
-
-### Alur Authentication
-
-1. **Register** → `POST /register`
-2. **Login** → `POST /login` (dapatkan JWT token)
-3. **Gunakan Token** → Sertakan di header setiap request
-4. **Logout** → `DELETE /logout/{id}`
-
-### Middleware
-
-- `verifyToken`: Validasi JWT token
-- `verifyAdmin`: Validasi role admin
-- `verifyMinePlanner`: Validasi role mine planner
-- `verifyShippingPlanner`: Validasi role shipping planner
-- `verifyIsUser`: Validasi ownership atau admin
-
----
-
-## 📖 API Endpoints
-
-### User Management
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/register` | Register user baru | Public |
-| POST | `/login` | Login & dapatkan token | Public |
-| DELETE | `/logout/{id}` | Logout user | Public |
-| GET | `/users/{id}` | Get user profile | Required |
-| PUT | `/users/{id}` | Update user profile | Required |
-| PUT | `/users/{id}/role` | Update user role | Admin only |
-| DELETE | `/users/{id}` | Delete user | Required |
-| POST | `/forgot-password` | Request password reset | Public |
-| POST | `/reset-password` | Reset password | Public |
-
-### Mine Management
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/mines` | Get all mines (paginated) | Required |
-| GET | `/mines/{id}` | Get mine by ID | Required |
-
-### Equipment Management
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/equipments` | Get all equipments (paginated) | Mine Planner |
-| GET | `/equipments/{id}` | Get equipment by ID | Mine Planner |
-| POST | `/equipments` | Create new equipment | Mine Planner |
-| PUT | `/equipments/{id}` | Update equipment | Mine Planner |
-
-### Effective Capacity
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/effective-capacity` | Get all capacity data | Mine Planner |
-| POST | `/effective-capacity` | Create capacity data | Mine Planner |
-| PUT | `/effective-capacity/{id}` | Update capacity data | Mine Planner |
-
-### Production Constraints
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/production-constraints` | Get all constraints | Mine Planner |
-| POST | `/production-constraints` | Create constraint | Mine Planner |
-
-### Production Plans
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/production-plans` | Get all plans (paginated) | Required |
-| POST | `/production-plans` | Create production plan | Mine Planner |
-| PUT | `/production-plans/{id}` | Update production plan | Mine Planner |
-
-### Weather Data
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/weather` | Get weather data (paginated) | Required |
-
-### Road Conditions
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/roads` | Get all road conditions | Required |
-| PUT | `/roads/{id}` | Update road condition | Mine Planner |
-
-### Shipping Schedules
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/shipping-schedules` | Get all schedules (paginated) | Shipping Planner |
-| GET | `/shipping-schedules/{id}` | Get schedule by ID | Shipping Planner |
-| POST | `/shipping-schedules` | Create schedule | Shipping Planner |
-| PUT | `/shipping-schedules/{id}` | Update schedule | Shipping Planner |
-
----
-
-## 📄 Pagination
-
-Kebanyakan GET endpoints mendukung pagination dengan cursor-based pagination:
-
-### Query Parameters
-```
-?limit=20              # Jumlah items per page (default: 20)
-?cursor=<cursor>       # Cursor untuk page berikutnya
-?start=2025-01-01      # Filter tanggal mulai
-?end=2025-12-31        # Filter tanggal akhir
-?all=true              # Get semua data tanpa pagination
-```
-
-### Response Format
-```json
-{
-  "message": "Success",
-  "error": false,
-  "limit": 20,
-  "nextCursor": "2025-11-27|ID123",
-  "total": 150,
-  "data": [...]
-}
-```
-
----
-
-## 🔍 Response Format
-
-### Success Response
-```json
-{
-  "message": "Operation successful",
-  "error": false,
-  "data": { ... }
-}
-```
-
-### Error Response
-```json
-{
-  "message": "Error description",
-  "error": true
-}
-```
-
-### HTTP Status Codes
-
-| Code | Description |
-|------|-------------|
-| 200 | OK - Request berhasil |
-| 201 | Created - Resource berhasil dibuat |
-| 400 | Bad Request - Invalid input |
-| 401 | Unauthorized - Token tidak valid/expired |
-| 403 | Forbidden - Tidak punya akses |
-| 404 | Not Found - Resource tidak ditemukan |
-| 500 | Server Error - Internal server error |
-
----
-
-## 💡 Best Practices
-
-### 1. Security
-- Selalu gunakan HTTPS di production
-- Gunakan strong password untuk database dan JWT secret
-- Implementasikan rate limiting
-- Validate semua user input
-- Sanitize data sebelum menyimpan ke database
-
-### 2. Performance
-- Gunakan pagination untuk large datasets
-- Implement caching untuk frequently accessed data
-- Optimize database queries dengan indexes
-- Monitor query performance
-
-### 3. Error Handling
-- Log semua errors dengan detail yang cukup
-- Return user-friendly error messages
-- Jangan expose sensitive information di error messages
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow ESLint configuration
-- Write tests for new features
-- Update documentation
-- Use meaningful commit messages
-
----
-
-## 📝 License
-
-This project is licensed under the ISC License.
+- **Email**: Nodemailer + MJML
+- **AI/ML**: Python Flask + scikit-learn
 
 ---
 
 ## 👥 Authors
 
-- Backend Development Team
+Backend Development Team
 
 ---
 
-## 🆘 Support
-
-Untuk pertanyaan atau issue, silakan buat issue di repository atau hubungi tim development.
-
----
-
-## 📚 Additional Documentation
-
-- **[TESTING.md](TESTING.md)** - Quick testing guide
-- **[tests/README.md](tests/README.md)** - Comprehensive testing documentation
-- **[API_DETAILED.md](API_DETAILED.md)** - Detailed API documentation (original README content)
+**Happy Coding! 🚀**

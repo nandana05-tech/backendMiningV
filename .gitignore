@@ -1,3 +1,53 @@
-backup/
-node_modules/ 
+# Dependencies
+node_modules/
+
+# Environment files (PENTING!)
 .env
+.env.docker
+.env.local
+.env.*.local
+
+# Database dumps
+*.sql
+backup/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Build artifacts
+dist/
+build/
+
+# Test coverage
+coverage/
+
+# Python (jika ada AI service)
+__pycache__/
+*.pyc
+*.pyo
+.Python
+venv/
+.venv/
+
+tests/
+*.test.js
+
+test-rag-integration.js
+check_db_schema.js
+MiningV_API.postman_collection.json
+start_services.bat
+
+README.ML.md
+TESTING.md
+handler.js

@@ -23,7 +23,6 @@ async function fetchPaginatedData({
     params.push(cursor);
   }
 
-  // Jika user request semua data
   if (all) {
     const [rows] = await pool.query(
       `
@@ -42,7 +41,6 @@ async function fetchPaginatedData({
     };
   }
 
-  // Pagination normal
   const [rows] = await pool.query(
     `
     SELECT ${select}
@@ -82,13 +80,11 @@ async function fetchPaginatedComposite({
     let where = "WHERE 1=1";
     const params = [];
 
-    // Filter date range
     if (start && end) {
       where += ` AND ${dateColumn} BETWEEN ? AND ?`;
       params.push(start, end);
     }
 
-    // Composite cursor
     if (cursorDate && cursorId) {
       where += `
         AND (
@@ -99,7 +95,6 @@ async function fetchPaginatedComposite({
       params.push(cursorDate, cursorDate, cursorId);
     }
 
-    // Jika ambil semua data tanpa pagination
     if (all) {
       const [rows] = await pool.query(
         `
@@ -119,7 +114,6 @@ async function fetchPaginatedComposite({
       };
     }
 
-    // Pagination normal
     const [rows] = await pool.query(
       `
       SELECT ${select}
@@ -131,7 +125,6 @@ async function fetchPaginatedComposite({
       [...params, limit]
     );
 
-    // Hitung nextCursor
     let nextCursorDate = null;
     let nextCursorId = null;
 
@@ -141,7 +134,6 @@ async function fetchPaginatedComposite({
       nextCursorId = last[idColumn];
     }
 
-    // Hitung total (tanpa cursor, tapi pakai date range)
     const [[{ total }]] = await pool.query(`
       SELECT COUNT(*) AS total
       FROM ${table}

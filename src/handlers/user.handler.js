@@ -9,12 +9,10 @@ exports.getUserById = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [rows] = await pool.query(
-      'SELECT id, nama, email, role FROM users WHERE id = ?',
-      [id]
-    );
+    const { findById } = require('../helpers/database.helper');
+    const user = await findById('users', 'id', id, 'id, nama, email, role');
 
-    if (rows.length === 0) {
+    if (!user) {
       return h
         .response({
           message: 'Pengguna tidak ditemukan',
@@ -27,7 +25,7 @@ exports.getUserById = async (req, h) => {
       .response({
         message: 'Profil berhasil diambil',
         error: false,
-        data: rows[0]
+        data: user
       })
       .code(200);
   } catch (err) {
@@ -49,23 +47,19 @@ exports.updateUser = async (req, h) => {
   const { nama, email, password } = req.payload;
 
   try {
-    let query = '';
-    let params = [];
-
+    const { buildDynamicUpdate } = require('../helpers/database.helper');
+    
+    const updateData = { nama, email };
+    
+    // If password is provided, hash it and add to update data
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      query =
-        'UPDATE users SET nama = ?, email = ?, password = ?, updated_at = NOW() WHERE id = ?';
-      params = [nama, email, hashedPassword, id];
-    } else {
-      query =
-        'UPDATE users SET nama = ?, email = ?, updated_at = NOW() WHERE id = ?';
-      params = [nama, email, id];
+      updateData.password = hashedPassword;
     }
 
-    const [result] = await pool.query(query, params);
+    const result = await buildDynamicUpdate('users', updateData, 'id', id);
 
-    if (result.affectedRows === 0) {
+    if (!result.success) {
       return h
         .response({
           message: 'Pengguna tidak ditemukan',
@@ -145,9 +139,10 @@ exports.deleteUser = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query('DELETE FROM users WHERE id = ?', [id]);
+    const { deleteById } = require('../helpers/database.helper');
+    const result = await deleteById('users', 'id', id);
 
-    if (result.affectedRows === 0) {
+    if (!result.success) {
       return h
         .response({ message: 'Pengguna tidak ditemukan', error: true })
         .code(404);

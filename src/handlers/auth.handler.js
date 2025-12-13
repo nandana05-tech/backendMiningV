@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const pool = require('../data');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
 const { verifyToken, verifyAdmin, verifyIsUser } = require('../middleware/auth.middleware');
 const { sendEmail } = require('../helpers/email.helper');
 
@@ -162,12 +161,10 @@ exports.getUserById = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [rows] = await pool.query(
-      'SELECT id, nama, email, role FROM users WHERE id = ?',
-      [id]
-    );
+    const { findById } = require('../helpers/database.helper');
+    const user = await findById('users', 'id', id, 'id, nama, email, role');
 
-    if (rows.length === 0) {
+    if (!user) {
       return h.response({
         message: 'Pengguna tidak ditemukan',
         error: true
@@ -177,7 +174,7 @@ exports.getUserById = async (req, h) => {
     return h.response({
       message: 'Profil berhasil diambil',
       error: false,
-      data: rows[0]
+      data: user
     }).code(200);
   } catch (err) {
     console.error('Error saat mengambil profil:', err);
@@ -282,9 +279,10 @@ exports.deleteUser = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query('DELETE FROM users WHERE id = ?', [id]);
+    const { deleteById } = require('../helpers/database.helper');
+    const result = await deleteById('users', 'id', id);
 
-    if (result.affectedRows === 0) {
+    if (!result.success) {
       return h.response({ 
         message: 'Pengguna tidak ditemukan', 
         error: true 

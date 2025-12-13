@@ -1,6 +1,7 @@
 const pool = require('../data');
 const { verifyToken, verifyMinePlanner } = require('../middleware/auth.middleware');
 const { fetchPaginatedData } = require('../helpers/pagination.helper');
+const { generateNextId, insertRecord, updateRecord } = require('../helpers/database.helper');
 
 exports.getProductionPlans = async (req, h) => {
   const verified = await verifyToken(req, h);
@@ -56,40 +57,20 @@ exports.createProductionPlan = async (req, h) => {
   } = req.payload;
 
   try {
-    const [result] = await pool.query(`
-      SELECT plan_id 
-      FROM production_plan
-      ORDER BY plan_id DESC
-      LIMIT 1
-    `);
+    // Generate ID baru menggunakan helper
+    const newId = await generateNextId('production_plan', 'plan_id', 'PLAN', 4);
 
-    let newId;
-    if (result.length === 0) {
-      newId = 'PLAN0000';
-    } else {
-      const lastId = result[0].plan_id;
-      const number = parseInt(lastId.slice(4));
-      const next = (number + 1).toString().padStart(4, '0');
-      newId = `PLAN${next}`;
-    }
-
-    await pool.query(
-      `
-      INSERT INTO production_plan
-      (plan_id, mine_id, week_start, planned_output_ton, actual_output_ton, target_variance_pct, status, updated_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-      [
-        newId,
-        mine_id,
-        week_start,
-        planned_output_ton,
-        actual_output_ton,
-        target_variance_pct,
-        status,
-        updated_by,
-      ]
-    );
+    // Insert menggunakan helper
+    await insertRecord('production_plan', {
+      plan_id: newId,
+      mine_id,
+      week_start,
+      planned_output_ton,
+      actual_output_ton,
+      target_variance_pct,
+      status,
+      updated_by,
+    });
 
     return h
       .response({
@@ -115,6 +96,14 @@ exports.updateProductionPlan = async (req, h) => {
   if (verified.error) return verified;
 
   const { id } = req.params;
+  
+  // Validasi payload
+  if (!req.payload) {
+    return h.response({
+      message: 'Payload tidak boleh kosong',
+      error: true,
+    }).code(400);
+  }
 
   const {
     mine_id,
@@ -127,25 +116,22 @@ exports.updateProductionPlan = async (req, h) => {
   } = req.payload;
 
   try {
-    const query = `
-      UPDATE production_plan
-      SET mine_id = ?, week_start = ?, planned_output_ton = ?, actual_output_ton = ?, 
-          target_variance_pct = ?, status = ?, updated_by = ?
-      WHERE plan_id = ?
-    `;
+    const result = await updateRecord(
+      'production_plan',
+      {
+        mine_id,
+        week_start,
+        planned_output_ton,
+        actual_output_ton,
+        target_variance_pct,
+        status,
+        updated_by,
+      },
+      'plan_id',
+      id
+    );
 
-    const [result] = await pool.query(query, [
-      mine_id,
-      week_start,
-      planned_output_ton,
-      actual_output_ton,
-      target_variance_pct,
-      status,
-      updated_by,
-      id,
-    ]);
-
-    if (result.affectedRows === 0) {
+    if (!result.success) {
       return h
         .response({
           message: 'Data tidak ditemukan',

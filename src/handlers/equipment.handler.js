@@ -1,6 +1,7 @@
 const pool = require('../data');
 const {verifyMinePlanner} = require('../middleware/auth.middleware');
 const { fetchPaginatedData } = require('../helpers/pagination.helper');
+const { generateNextId, insertRecord, updateRecord, findById } = require('../helpers/database.helper');
 
 exports.getAllEquipments = async (req, h) => {
   const verified = await verifyMinePlanner(req, h);
@@ -33,7 +34,7 @@ exports.getAllEquipments = async (req, h) => {
     }).code(200);
 
   } catch (err) {
-    console.error("Error getAllEquipments:", err);
+    console.error("Error getAllEquipments:",err);
 
     return h.response({
       message: "Server error",
@@ -50,14 +51,14 @@ exports.getEquipmentById = async (req, h) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query(
-      `SELECT equipment_id, mine_id, equipment_type, brand, model, base_capacity_ton, last_maintenance, operator_id 
-      FROM equipment_inventory 
-      WHERE equipment_id = ? LIMIT 1`,
-      [id]
+    const equipment = await findById(
+      'equipment_inventory',
+      'equipment_id',
+      id,
+      'equipment_id, mine_id, equipment_type, brand, model, base_capacity_ton, last_maintenance, operator_id'
     );
 
-    if (!result.length) {
+    if (!equipment) {
       return h.response({
         message: "Equipment tidak ditemukan",
         error: true
@@ -67,7 +68,7 @@ exports.getEquipmentById = async (req, h) => {
     return h.response({
       message: "Berhasil",
       error: false,
-      data: result[0],
+      data: equipment,
     }).code(200);
 
   } catch (err) {
@@ -90,44 +91,21 @@ exports.createEquipment = async (req, h) => {
     operator_id,
   } = req.payload;
 
-  const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
+    // Generate ID baru menggunakan helper
+    const newId = await generateNextId('equipment_inventory', 'equipment_id', 'EQ', 3);
 
-    const [idResult] = await conn.query(`
-      SELECT CONCAT(
-        'EQ',
-        LPAD(
-          COALESCE(MAX(CAST(SUBSTRING(equipment_id, 3) AS UNSIGNED)), 0) + 1,
-          3,
-          '0'
-        )
-      ) AS newId
-      FROM equipment_inventory
-      FOR UPDATE
-    `);
-
-    const newId = idResult[0].newId;
-
-    await conn.query(
-      `
-      INSERT INTO equipment_inventory 
-      (equipment_id, mine_id, equipment_type, brand, model, base_capacity_ton, last_maintenance, operator_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-      [
-        newId,
-        mine_id,
-        equipment_type,
-        brand,
-        model,
-        base_capacity_ton,
-        last_maintenance,
-        operator_id,
-      ]
-    );
-
-    await conn.commit();
+    // Insert menggunakan helper
+    await insertRecord('equipment_inventory', {
+      equipment_id: newId,
+      mine_id,
+      equipment_type,
+      brand,
+      model,
+      base_capacity_ton,
+      last_maintenance,
+      operator_id,
+    });
 
     return h
       .response({
@@ -137,13 +115,10 @@ exports.createEquipment = async (req, h) => {
       })
       .code(201);
   } catch (err) {
-    await conn.rollback();
     console.error(err);
     return h
       .response({ message: "Gagal menambahkan equipment", error: true })
       .code(500);
-  } finally {
-    conn.release();
   }
 };
 
@@ -152,27 +127,42 @@ exports.updateEquipment = async (req, h) => {
   if (verified.error) return verified;
 
   const { id } = req.params;
+  
+  // Validasi payload
+  if (!req.payload) {
+    return h.response({
+      message: "Payload tidak boleh kosong",
+      error: true
+    }).code(400);
+  }
+
   const {
-    mine_id, equipment_type, brand,
-    model, base_capacity_ton,
-    last_maintenance, operator_id,
+    mine_id,
+    equipment_type,
+    brand,
+    model,
+    base_capacity_ton,
+    last_maintenance,
+    operator_id,
   } = req.payload;
 
   try {
-    const [result] = await pool.query(
-      `
-      UPDATE equipment_inventory
-      SET mine_id=?, equipment_type=?, brand=?, model=?, base_capacity_ton=?, last_maintenance=?, operator_id=?
-      WHERE equipment_id=?
-      `,
-      [
-        mine_id, equipment_type, brand, model,
-        base_capacity_ton, last_maintenance,
-        operator_id, id
-      ]
+    const result = await updateRecord(
+      'equipment_inventory',
+      {
+        mine_id,
+        equipment_type,
+        brand,
+        model,
+        base_capacity_ton,
+        last_maintenance,
+        operator_id,
+      },
+      'equipment_id',
+      id
     );
 
-    if (!result.affectedRows) {
+    if (!result.success) {
       return h.response({
         message: "Equipment tidak ditemukan untuk update",
         error: true
